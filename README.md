@@ -9,12 +9,16 @@
 </p>
 
 <p align="center">
+  <img src="docs/images/agentmem_demo.gif" width="800" alt="AgentMem Studio Demo" />
+</p>
+
+<p align="center">
   <a href="#overview">Overview</a> •
   <a href="#core-architecture">Architecture</a> •
   <a href="#quickstart">Quickstart</a> •
   <a href="#sdk-usage">SDK Usage</a> •
   <a href="#cli-reference">CLI</a> •
-  <a href="#embedded-studio">Web Studio</a> •
+  <a href="#web-studio">Web Studio</a> •
   <a href="#license">License</a>
 </p>
 
@@ -78,13 +82,13 @@ npm install
 npm run build
 ```
 
-Run tests:
+Run test suite:
 
 ```bash
 npm test
 ```
 
-Start the interactive Web Studio:
+Launch the interactive Web Studio:
 
 ```bash
 npm run studio
@@ -100,7 +104,7 @@ import { AgentMemory } from 'agentmem';
 // Initialize the memory engine with local SQLite database
 const memory = new AgentMemory({
   dbPath: './agentmem.db',
-  decayIntervalHours: 24,
+  decayHalfLifeDays: 7,
 });
 
 await memory.initialize();
@@ -111,7 +115,7 @@ await memory.ingestEpisode({
   turns: [
     { role: 'user', content: 'Our production database is PostgreSQL 16 on AWS Aurora.' },
     { role: 'assistant', content: 'Got it. I will keep that infrastructure in mind.' },
-    { role: 'user', content: 'Always format database migrations as pure SQL without ORMs.' }
+    { role: 'user', content: 'Strictly avoid any ORMs. Always format database migrations as pure SQL.' }
   ]
 });
 
@@ -136,6 +140,18 @@ console.log(recallResult.systemPromptSnippet);
 
 ---
 
+## Web Studio
+
+AgentMem embeds a React 19 Web Studio for real-time memory inspection:
+
+| View | Screenshot |
+| :--- | :--- |
+| **Interactive Graph Canvas**<br/>Physics-driven 2D knowledge graph showing entity nodes, importance scores, and decay retention. | <img src="docs/images/agentmem_studio_graph.png" width="400" alt="Knowledge Graph" /> |
+| **Recall Simulator**<br/>Simulate hybrid memory recall blending Vector cosine, BM25, and Graph proximity. | <img src="docs/images/agentmem_simulator.png" width="400" alt="Recall Simulator" /> |
+| **Episodic Timeline**<br/>Chronological feed of session milestones and multi-turn conversation traces. | <img src="docs/images/agentmem_timeline.png" width="400" alt="Episodic Timeline" /> |
+
+---
+
 ## CLI Reference
 
 AgentMem includes a command-line interface for maintenance, querying, and launching the Web Studio:
@@ -156,17 +172,6 @@ agentmem ingest ./examples/agent-conversation-trace.json --db ./agentmem.db
 # Display memory statistics and node counts
 agentmem stats --db ./agentmem.db
 ```
-
----
-
-## Embedded Studio
-
-AgentMem embeds a React 19 Web Studio for real-time memory inspection:
-
-* **Force-directed Knowledge Graph:** Interactive 2D visualization of entities, properties, and relation edges.
-* **Episodic Timeline:** Chronological narrative milestones organized by session.
-* **Recall Simulator:** Test queries and inspect hybrid search weights (Vector, FTS5, Graph traversal) before deploying prompts.
-* **Memory Editor:** Create, update, or remove entity nodes and relations directly.
 
 ---
 

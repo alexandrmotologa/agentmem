@@ -1,0 +1,39 @@
+{
+  "sessionId": "session_arch_bootstrap",
+  "summary": "Project bootstrapping and initial architectural decisions",
+  "outcome": "SUCCESS",
+  "turns": [
+    {
+      "role": "user",
+      "content": "Our backend infrastructure runs on AWS Aurora with PostgreSQL 16."
+    },
+    {
+      "role": "assistant",
+      "content": "Understood. I have noted that the database is PostgreSQL 16 on AWS Aurora."
+    },
+    {
+      "role": "user",
+      "content": "Strictly avoid any ORMs. Always format database migrations as pure SQL without Prisma or TypeORM."
+    },
+    {
+      "role": "assistant",
+      "content": "Rule recorded: pure SQL migrations only, no ORMs permitted."
+    },
+    {
+      "role": "user",
+      "content": "I prefer TypeScript for all tooling and backend services."
+    },
+    {
+      "role": "assistant",
+      "content": "Noted your preference for TypeScript."
+    },
+    {
+      "role": "user",
+      "content": "The frontend is built with React 19 and Vite."
+    },
+    {
+      "role": "assistant",
+      "content": "Got it. React 19 with Vite for the client application."
+    }
+  ]
+}

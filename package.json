@@ -1,0 +1,58 @@
+{
+  "name": "agentmem",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Hierarchical long-term memory engine with entity knowledge graph, memory consolidation, and visual studio for AI agents",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "agentmem": "./bin/agentmem.js"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/cli/index.ts --format cjs,esm --dts && npm run build:studio",
+    "build:core": "tsup src/index.ts src/cli/index.ts --format cjs,esm --dts",
+    "build:studio": "cd src/studio && npm run build",
+    "dev": "tsx src/cli/index.ts studio",
+    "studio": "node ./bin/agentmem.js studio",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "agent-memory",
+    "autonomous-agents",
+    "knowledge-graph",
+    "sqlite",
+    "fts5",
+    "vector-search",
+    "hierarchical-memory",
+    "ebbinghaus-decay",
+    "memory-consolidation",
+    "hybrid-retrieval",
+    "typescript",
+    "react-19",
+    "developer-tools"
+  ],
+  "author": "Alexandr Motologa",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^13.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "picocolors": "^1.1.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.9",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
