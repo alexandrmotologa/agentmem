@@ -82,10 +82,10 @@ export const App: React.FC = () => {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6">
         {/* Navigation Tabs */}
-        <div className="flex items-center justify-between border-b border-border/80 pb-4 overflow-x-auto">
-          <div className="flex items-center gap-1.5 bg-surface p-1 rounded-xl border border-border">
+        <div className="flex items-center justify-between border-b border-border/80 pb-3 sm:pb-4 overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1.5 bg-surface p-1 rounded-xl border border-border shrink-0">
             <button
               onClick={() => setActiveTab('GRAPH')}
               className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${

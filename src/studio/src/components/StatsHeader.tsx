@@ -62,7 +62,7 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
   };
 
   return (
-    <header className="border-b border-border bg-[#0b1120]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4">
+    <header className="border-b border-border bg-[#0b1120]/80 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 py-3 sm:py-4">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         {/* Brand */}
         <div className="flex items-center gap-3">

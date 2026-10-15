@@ -67,10 +67,10 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({ nodes, edges }) 
       return {
         ...node,
         radius,
-        x: prev?.x ?? (width / 2 + (Math.random() - 0.5) * 350),
-        y: prev?.y ?? (height / 2 + (Math.random() - 0.5) * 350),
-        vx: prev?.vx ?? 0,
-        vy: prev?.vy ?? 0,
+        x: Number.isFinite(prev?.x) ? prev!.x : (width / 2 + (Math.random() - 0.5) * Math.min(width * 0.6, 350)),
+        y: Number.isFinite(prev?.y) ? prev!.y : (height / 2 + (Math.random() - 0.5) * Math.min(height * 0.6, 350)),
+        vx: Number.isFinite(prev?.vx) ? prev!.vx : 0,
+        vy: Number.isFinite(prev?.vy) ? prev!.vy : 0,
       };
     });
   }, [nodes]);
@@ -105,7 +105,6 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({ nodes, edges }) 
       const visibleMap = new Map(visibleNodes.map((n) => [n.id, n]));
 
       // 1. Node Repulsion
-      const k = 120;
       for (let i = 0; i < visibleNodes.length; i++) {
         for (let j = i + 1; j < visibleNodes.length; j++) {
           const a = visibleNodes[i];
@@ -113,23 +112,24 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({ nodes, edges }) 
           const dx = (b.x || 0) - (a.x || 0);
           const dy = (b.y || 0) - (a.y || 0);
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          if (dist < 400) {
-            const force = (k * k) / dist;
+          if (dist < 280) {
+            const force = 1800 / (dist * dist + 150);
             const fx = (dx / dist) * force;
             const fy = (dy / dist) * force;
             if (a !== draggedNodeRef.current) {
-              a.vx = (a.vx || 0) - fx * 0.03;
-              a.vy = (a.vy || 0) - fy * 0.03;
+              a.vx = (a.vx || 0) - fx;
+              a.vy = (a.vy || 0) - fy;
             }
             if (b !== draggedNodeRef.current) {
-              b.vx = (b.vx || 0) + fx * 0.03;
-              b.vy = (b.vy || 0) + fy * 0.03;
+              b.vx = (b.vx || 0) + fx;
+              b.vy = (b.vy || 0) + fy;
             }
           }
         }
       }
 
       // 2. Edge Attraction
+      const restLength = 90;
       for (const edge of edges) {
         const source = visibleMap.get(edge.source);
         const target = visibleMap.get(edge.target);
@@ -137,35 +137,47 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({ nodes, edges }) 
           const dx = (target.x || 0) - (source.x || 0);
           const dy = (target.y || 0) - (source.y || 0);
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const force = (dist * dist) / k;
+          const displacement = dist - restLength;
+          const force = displacement * 0.02;
           const fx = (dx / dist) * force;
           const fy = (dy / dist) * force;
 
           if (source !== draggedNodeRef.current) {
-            source.vx = (source.vx || 0) + fx * 0.02;
-            source.vy = (source.vy || 0) + fy * 0.02;
+            source.vx = (source.vx || 0) + fx;
+            source.vy = (source.vy || 0) + fy;
           }
           if (target !== draggedNodeRef.current) {
-            target.vx = (target.vx || 0) - fx * 0.02;
-            target.vy = (target.vy || 0) - fy * 0.02;
+            target.vx = (target.vx || 0) - fx;
+            target.vy = (target.vy || 0) - fy;
           }
         }
       }
 
-      // 3. Center Gravity & Velocity Damping
+      // 3. Center Gravity & Velocity Damping & Bounds
       const centerX = width / 2;
       const centerY = height / 2;
 
       for (const node of visibleNodes) {
         if (node === draggedNodeRef.current) continue;
 
-        const cdx = centerX - (node.x || 0);
-        const cdy = centerY - (node.y || 0);
-        node.vx = (node.vx || 0) * 0.85 + cdx * 0.003;
-        node.vy = (node.vy || 0) * 0.85 + cdy * 0.003;
+        const cdx = centerX - (node.x || centerX);
+        const cdy = centerY - (node.y || centerY);
+        node.vx = (node.vx || 0) * 0.8 + cdx * 0.004;
+        node.vy = (node.vy || 0) * 0.8 + cdy * 0.004;
 
-        node.x = (node.x || 0) + (node.vx || 0);
-        node.y = (node.y || 0) + (node.vy || 0);
+        // Clamp speed
+        const speed = Math.sqrt((node.vx || 0) ** 2 + (node.vy || 0) ** 2);
+        if (speed > 10) {
+          node.vx = ((node.vx || 0) / speed) * 10;
+          node.vy = ((node.vy || 0) / speed) * 10;
+        }
+
+        const nextX = (node.x || centerX) + (node.vx || 0);
+        const nextY = (node.y || centerY) + (node.vy || 0);
+
+        // Keep inside bounds
+        node.x = Math.max(35, Math.min(width - 35, Number.isFinite(nextX) ? nextX : centerX));
+        node.y = Math.max(35, Math.min(height - 35, Number.isFinite(nextY) ? nextY : centerY));
       }
 
       // 4. Render

@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <clipPath id="squircle-clip">
+      <rect x="24" y="24" width="976" height="976" rx="220" />
+    </clipPath>
+
+    <!-- Electric Cyan Memory Optical Gradients -->
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#00f5ff"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="tusk-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+
+    <linearGradient id="tusk-shadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+
+    <linearGradient id="mesh-dark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#050811"/>
+    </linearGradient>
+
+    <filter id="subtle-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#0f172a" flood-opacity="0.14" />
+    </filter>
+  </defs>
+
+  <!-- Luxury White Squircle Container -->
+  <rect x="24" y="24" width="976" height="976" rx="220" fill="#ffffff" stroke="#e2e8f0" stroke-width="6" />
+
+  <g clip-path="url(#squircle-clip)">
+    <g transform="translate(512, 512)" filter="url(#subtle-shadow)">
+
+      <!-- Hexagonal Architectural Gateway Frame -->
+      <polygon points="
+        0,-390
+        338,-195
+        338,195
+        0,390
+        -338,195
+        -338,-195
+      " fill="none" stroke="#0f172a" stroke-width="36" stroke-linejoin="round" />
+
+      <polygon points="
+        0,-355
+        307,-177
+        307,177
+        0,355
+        -307,177
+        -307,-177
+      " fill="none" stroke="#00f5ff" stroke-width="4" opacity="0.45" stroke-dasharray="16, 12" />
+
+      <!-- 100% Watertight Solid Base Silhouette of Memory Elephant -->
+      <path d="
+        M 0 -240
+        L 80 -235 L 150 -205 L 210 -150 L 285 -140 L 320 -50 L 310 60 L 260 160 L 190 200 L 140 150
+        L 115 170 L 135 240 L 95 245 L 75 140
+        L 55 170 L 45 270 L 35 340 L 0 355
+        L -35 340 L -45 270 L -55 170
+        L -75 140 L -95 245 L -135 240 L -115 170
+        L -140 150 L -190 200 L -260 160 L -310 60 L -320 -50 L -285 -140 L -210 -150 L -150 -205 L -80 -235
+        Z
+      " fill="#0b0f19" />
+
+      <!-- Outer Ears - Left (Volumetric Facets) -->
+      <polygon points="-150,-205 -285,-140 -210,-60 -140,-110" fill="#1e293b" />
+      <polygon points="-285,-140 -320,-50 -240,10 -210,-60" fill="#334155" />
+      <polygon points="-320,-50 -310,60 -230,80 -240,10" fill="#1e293b" />
+      <polygon points="-310,60 -260,160 -200,120 -230,80" fill="#0f172a" />
+      <polygon points="-260,160 -190,200 -140,150 -200,120" fill="#1e293b" />
+      <polygon points="-210,-60 -240,10 -160,20 -130,-40" fill="#293548" />
+      <polygon points="-240,10 -230,80 -170,80 -160,20" fill="#1e293b" />
+      <polygon points="-230,80 -200,120 -150,110 -170,80" fill="#334155" />
+
+      <!-- Outer Ears - Right (Volumetric Facets - Shadow Pair) -->
+      <polygon points="150,-205 285,-140 210,-60 140,-110" fill="#162032" />
+      <polygon points="285,-140 320,-50 240,10 210,-60" fill="#253245" />
+      <polygon points="320,-50 310,60 230,80 240,10" fill="#162032" />
+      <polygon points="310,60 260,160 200,120 230,80" fill="#0a0e17" />
+      <polygon points="260,160 190,200 140,150 200,120" fill="#162032" />
+      <polygon points="210,-60 240,10 160,20 130,-40" fill="#1e293b" />
+      <polygon points="240,10 230,80 170,80 160,20" fill="#162032" />
+      <polygon points="230,80 200,120 150,110 170,80" fill="#253245" />
+
+      <!-- Forehead & Skull Crown (Origami Symmetry) -->
+      <polygon points="0,-240 -80,-235 -50,-170 0,-185" fill="#3b4b61" />
+      <polygon points="0,-240 80,-235 50,-170 0,-185" fill="#2d3b4e" />
+      <polygon points="-80,-235 -150,-205 -140,-110 -50,-170" fill="#334155" />
+      <polygon points="80,-235 150,-205 140,-110 50,-170" fill="#1e293b" />
+
+      <!-- Mid-Face & Brow Core -->
+      <polygon points="0,-185 -50,-170 -65,-90 0,-100" fill="#475569" />
+      <polygon points="0,-185 50,-170 65,-90 0,-100" fill="#334155" />
+      <polygon points="-50,-170 -140,-110 -130,-40 -65,-90" fill="#1e293b" />
+      <polygon points="50,-170 140,-110 130,-40 65,-90" fill="#141c2b" />
+
+      <!-- Electric Cyan Eyes & Predator Sockets (Negative space cant) -->
+      <polygon points="-110,-55 -60,-80 -45,-50 -85,-35" fill="#0b0f19" />
+      <polygon points="-105,-55 -65,-75 -50,-52 -82,-40" fill="url(#cyan-glow)" />
+      <polygon points="-88,-58 -68,-68 -60,-55 -78,-48" fill="#ffffff" opacity="0.9" />
+
+      <polygon points="110,-55 60,-80 45,-50 85,-35" fill="#0b0f19" />
+      <polygon points="105,-55 65,-75 50,-52 82,-40" fill="url(#cyan-glow)" />
+      <polygon points="88,-58 68,-68 60,-55 78,-48" fill="#ffffff" opacity="0.9" />
+
+      <!-- Bridge of Nose & Trunk Base -->
+      <polygon points="0,-100 -65,-90 -45,-10 0,0" fill="#334155" />
+      <polygon points="0,-100 65,-90 45,-10 0,0" fill="#1e293b" />
+      <polygon points="-65,-90 -130,-40 -110,30 -45,-10" fill="#1e293b" />
+      <polygon points="65,-90 130,-40 110,30 45,-10" fill="#121824" />
+
+      <!-- Cheeks & Lower Mandible -->
+      <polygon points="-45,-10 -110,30 -90,110 -35,70" fill="#2d3b4e" />
+      <polygon points="45,-10 110,30 90,110 35,70" fill="#1a2332" />
+
+      <!-- Ivory Tusks (Heroic Precision) -->
+      <!-- Left Tusk -->
+      <polygon points="-65,80 -125,230 -105,235 -45,95" fill="url(#tusk-light)" />
+      <polygon points="-45,95 -105,235 -90,230 -35,90" fill="url(#tusk-shadow)" />
+
+      <!-- Right Tusk -->
+      <polygon points="65,80 125,230 105,235 45,95" fill="url(#tusk-shadow)" />
+      <polygon points="45,95 105,235 90,230 35,90" fill="url(#tusk-light)" />
+
+      <!-- Central Trunk Segments (Stepping Downwards with Memory Nodes) -->
+      <!-- Segment 1 -->
+      <polygon points="0,0 -45,-10 -35,70 0,75" fill="#3b4b61" />
+      <polygon points="0,0 45,-10 35,70 0,75" fill="#243042" />
+
+      <!-- Segment 2 -->
+      <polygon points="0,75 -35,70 -30,150 0,155" fill="#475569" />
+      <polygon points="0,75 35,70 30,150 0,155" fill="#2b384c" />
+
+      <!-- Segment 3 -->
+      <polygon points="0,155 -30,150 -25,230 0,235" fill="#334155" />
+      <polygon points="0,155 30,150 25,230 0,235" fill="#1e293b" />
+
+      <!-- Segment 4 -->
+      <polygon points="0,235 -25,230 -20,300 0,305" fill="#293548" />
+      <polygon points="0,235 25,230 20,300 0,305" fill="#162030" />
+
+      <!-- Trunk Tip (Keyhole Memory Recaller) -->
+      <polygon points="0,305 -20,300 -12,345 0,350" fill="#1e293b" />
+      <polygon points="0,305 20,300 12,345 0,350" fill="#0f172a" />
+
+      <!-- Subtle Cyan Data Pulse along Trunk Centerline -->
+      <line x1="0" y1="-70" x2="0" y2="330" stroke="#00f5ff" stroke-width="3" opacity="0.6" stroke-dasharray="14, 8" />
+      <circle cx="0" cy="75" r="4" fill="#00f5ff" opacity="0.8" />
+      <circle cx="0" cy="155" r="4" fill="#00f5ff" opacity="0.8" />
+      <circle cx="0" cy="235" r="4" fill="#00f5ff" opacity="0.8" />
+      <circle cx="0" cy="305" r="4" fill="#00f5ff" opacity="0.8" />
+
+    </g>
+  </g>
+</svg>

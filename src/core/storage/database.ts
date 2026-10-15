@@ -42,7 +42,7 @@ export class DatabaseManager {
   }
 
   private initSchema(): void {
-    const schemaSql = `
+    const tablesSql = `
       CREATE TABLE IF NOT EXISTS entities (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
@@ -58,12 +58,6 @@ export class DatabaseManager {
         namespace TEXT NOT NULL DEFAULT 'default'
       );
 
-      CREATE INDEX IF NOT EXISTS idx_entities_name ON entities(name);
-      CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(entity_type);
-      CREATE INDEX IF NOT EXISTS idx_entities_importance ON entities(importance_score);
-      CREATE INDEX IF NOT EXISTS idx_entities_retention ON entities(decay_retention);
-      CREATE INDEX IF NOT EXISTS idx_entities_namespace ON entities(namespace);
-
       CREATE TABLE IF NOT EXISTS relations (
         id TEXT PRIMARY KEY,
         source_entity_id TEXT NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
@@ -77,12 +71,6 @@ export class DatabaseManager {
         namespace TEXT NOT NULL DEFAULT 'default'
       );
 
-      CREATE INDEX IF NOT EXISTS idx_relations_source ON relations(source_entity_id);
-      CREATE INDEX IF NOT EXISTS idx_relations_target ON relations(target_entity_id);
-      CREATE INDEX IF NOT EXISTS idx_relations_type ON relations(relation_type);
-      CREATE INDEX IF NOT EXISTS idx_relations_valid ON relations(valid_until);
-      CREATE INDEX IF NOT EXISTS idx_relations_namespace ON relations(namespace);
-
       CREATE TABLE IF NOT EXISTS episodes (
         id TEXT PRIMARY KEY,
         session_id TEXT NOT NULL,
@@ -95,11 +83,6 @@ export class DatabaseManager {
         agent_id TEXT
       );
 
-      CREATE INDEX IF NOT EXISTS idx_episodes_session ON episodes(session_id);
-      CREATE INDEX IF NOT EXISTS idx_episodes_created ON episodes(created_at);
-      CREATE INDEX IF NOT EXISTS idx_episodes_namespace ON episodes(namespace);
-      CREATE INDEX IF NOT EXISTS idx_episodes_agent ON episodes(agent_id);
-
       CREATE TABLE IF NOT EXISTS working_memory (
         id TEXT PRIMARY KEY,
         session_id TEXT NOT NULL,
@@ -111,9 +94,6 @@ export class DatabaseManager {
         agent_id TEXT
       );
 
-      CREATE INDEX IF NOT EXISTS idx_working_session_time ON working_memory(session_id, timestamp);
-      CREATE INDEX IF NOT EXISTS idx_working_namespace ON working_memory(namespace);
-
       CREATE TABLE IF NOT EXISTS vector_embeddings (
         id TEXT PRIMARY KEY,
         item_type TEXT NOT NULL,
@@ -123,9 +103,6 @@ export class DatabaseManager {
         created_at INTEGER NOT NULL,
         namespace TEXT NOT NULL DEFAULT 'default'
       );
-
-      CREATE INDEX IF NOT EXISTS idx_vectors_item ON vector_embeddings(item_type, item_id);
-      CREATE INDEX IF NOT EXISTS idx_vectors_namespace ON vector_embeddings(namespace);
 
       CREATE VIRTUAL TABLE IF NOT EXISTS fts_entities USING fts5(
         entity_id UNINDEXED,
@@ -141,8 +118,35 @@ export class DatabaseManager {
       );
     `;
 
-    this.db.exec(schemaSql);
+    this.db.exec(tablesSql);
     this.runMigrations();
+
+    const indicesSql = `
+      CREATE INDEX IF NOT EXISTS idx_entities_name ON entities(name);
+      CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(entity_type);
+      CREATE INDEX IF NOT EXISTS idx_entities_importance ON entities(importance_score);
+      CREATE INDEX IF NOT EXISTS idx_entities_retention ON entities(decay_retention);
+      CREATE INDEX IF NOT EXISTS idx_entities_namespace ON entities(namespace);
+
+      CREATE INDEX IF NOT EXISTS idx_relations_source ON relations(source_entity_id);
+      CREATE INDEX IF NOT EXISTS idx_relations_target ON relations(target_entity_id);
+      CREATE INDEX IF NOT EXISTS idx_relations_type ON relations(relation_type);
+      CREATE INDEX IF NOT EXISTS idx_relations_valid ON relations(valid_until);
+      CREATE INDEX IF NOT EXISTS idx_relations_namespace ON relations(namespace);
+
+      CREATE INDEX IF NOT EXISTS idx_episodes_session ON episodes(session_id);
+      CREATE INDEX IF NOT EXISTS idx_episodes_created ON episodes(created_at);
+      CREATE INDEX IF NOT EXISTS idx_episodes_namespace ON episodes(namespace);
+      CREATE INDEX IF NOT EXISTS idx_episodes_agent ON episodes(agent_id);
+
+      CREATE INDEX IF NOT EXISTS idx_working_session_time ON working_memory(session_id, timestamp);
+      CREATE INDEX IF NOT EXISTS idx_working_namespace ON working_memory(namespace);
+
+      CREATE INDEX IF NOT EXISTS idx_vectors_item ON vector_embeddings(item_type, item_id);
+      CREATE INDEX IF NOT EXISTS idx_vectors_namespace ON vector_embeddings(namespace);
+    `;
+
+    this.db.exec(indicesSql);
   }
 
   private runMigrations(): void {

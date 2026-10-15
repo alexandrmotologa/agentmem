@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/agentmem_logo.svg" width="128" height="128" alt="AgentMem Logo" />
+  <img src="docs/images/logo.png" width="140" height="140" alt="AgentMem Elephant Logo" />
 </p>
 
 <h1 align="center">AgentMem</h1>
@@ -260,15 +260,43 @@ await memoryMiddleware.onFinish({
 
 ## Web Studio
 
-AgentMem embeds a React 19 Web Studio for real-time memory inspection and management:
+AgentMem embeds a React 19 Web Studio for real-time memory inspection and management on port 50094:
 
-| View | Description |
-| :--- | :--- |
-| **Interactive Graph Canvas** | Physics-driven 2D knowledge graph showing entity nodes, importance scores, namespaces, and decay retention. |
-| **Recall Simulator** | Simulate hybrid memory recall blending Vector cosine, BM25, and Graph proximity with live token counters. |
-| **Ingestion Playground** | Paste Markdown specs or conversation traces to test entity extraction and triplet generation in real time. |
-| **Conflict Resolver** | Review and resolve contradicted facts where preferences or system settings were superseded over time. |
-| **Episodic Timeline** | Chronological feed of session milestones, conversation traces, and task outcomes. |
+### Interactive Graph Canvas
+Physics-driven 2D knowledge graph showing entity nodes, importance scores, multi-agent namespaces, and retention levels.
+
+<p align="center">
+  <img src="docs/images/agentmem_studio_graph.png" width="900" alt="AgentMem Interactive Graph Canvas" />
+</p>
+
+### Hybrid Recall Simulator
+Simulate runtime memory retrieval blending dense Vector cosine, SQLite FTS5 BM25, and Graph adjacency with live token counters and prompt synthesizer preview.
+
+<p align="center">
+  <img src="docs/images/agentmem_simulator.png" width="900" alt="AgentMem Recall Simulator" />
+</p>
+
+### Document & Dialogue Ingestion Playground
+Parse Markdown technical specs, PRDs, or multi-turn dialogues directly into graph entities, tech dependencies, and relations in milliseconds.
+
+<p align="center">
+  <img src="docs/images/agentmem_ingestion.png" width="900" alt="AgentMem Ingestion Playground" />
+</p>
+
+### Contradiction & Conflict Resolver
+Inspect and resolve conflicting or superseded relationship edges with one-click actions: Keep New, Restore Old, or Delete Both.
+
+<p align="center">
+  <img src="docs/images/agentmem_conflicts.png" width="900" alt="AgentMem Conflict Resolver" />
+</p>
+
+### Episodic Timeline & Mobile Responsiveness
+Chronological session summaries and responsive mobile drawer navigation tested across 390px to 1728px viewports.
+
+<p align="center">
+  <img src="docs/images/agentmem_timeline.png" width="580" alt="AgentMem Episodic Timeline" />
+  <img src="docs/images/agentmem_mobile_390.png" width="280" alt="AgentMem Mobile Viewport (390px)" />
+</p>
 
 ---
 
