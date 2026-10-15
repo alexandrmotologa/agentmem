@@ -18,6 +18,7 @@ export interface EntityNode {
   lastRecalledAt: number;
   decayRetention: number; // 0.0 to 1.0
   isArchived: boolean;
+  namespace: string;
 }
 
 export interface RelationEdge {
@@ -33,12 +34,14 @@ export interface RelationEdge {
   sourceEntityName?: string;
   targetEntityName?: string;
   targetEntityType?: EntityType;
+  namespace: string;
 }
 
 export interface ConversationTurn {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp?: number;
+  agentId?: string;
 }
 
 export interface Episode {
@@ -49,6 +52,8 @@ export interface Episode {
   importance: number;
   outcome: string;
   createdAt: number;
+  namespace: string;
+  agentId?: string | null;
 }
 
 export interface WorkingMemoryItem {
@@ -58,6 +63,8 @@ export interface WorkingMemoryItem {
   content: string;
   tokens: number;
   timestamp: number;
+  namespace: string;
+  agentId?: string | null;
 }
 
 export interface VectorItem {
@@ -67,6 +74,7 @@ export interface VectorItem {
   dimension: number;
   vector: number[];
   createdAt: number;
+  namespace: string;
 }
 
 export interface RecalledMemory {
@@ -81,6 +89,7 @@ export interface RecalledMemory {
     sessionId: string;
     summary: string;
     timestamp: number;
+    agentId?: string | null;
   }>;
   scores: {
     vectorScore: number;
@@ -93,6 +102,7 @@ export interface RecalledMemory {
 
 export interface InjectedContextResult {
   systemPromptSnippet: string;
+  injectedPrompt?: string;
   tokenCount: number;
   recalledEntityIds: string[];
   recalledEpisodeIds: string[];
@@ -105,6 +115,8 @@ export interface RecallOptions {
   topK?: number;
   includeEpisodes?: boolean;
   graphHops?: number;
+  namespace?: string;
+  agentId?: string;
   weights?: {
     vector?: number;
     bm25?: number;
@@ -133,10 +145,12 @@ export interface ConsolidationStats {
   deduplicatedCount: number;
   episodesConsolidated: number;
   durationMs: number;
+  namespace?: string;
 }
 
 export interface MemoryConfig {
   dbPath?: string;
+  defaultNamespace?: string;
   maxWorkingMemoryTokens?: number;
   decayHalfLifeDays?: number;
   pruneRetentionThreshold?: number;
@@ -146,3 +160,28 @@ export interface MemoryConfig {
     graph: number;
   };
 }
+
+export interface DocumentIngestResult {
+  filePath: string;
+  sectionsProcessed: number;
+  entitiesCreated: number;
+  relationsCreated: number;
+  tripletsExtracted: number;
+  durationMs: number;
+}
+
+export interface ConflictItem {
+  id: string;
+  sourceEntityId: string;
+  sourceEntityName: string;
+  targetEntityId: string;
+  targetEntityName: string;
+  relationType: string;
+  supersededBy?: string | null;
+  validUntil?: number | null;
+  confidence: number;
+  createdAt: number;
+  namespace: string;
+}
+
+export type ExportFormat = 'json' | 'graphml' | 'cypher';

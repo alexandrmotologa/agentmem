@@ -3,11 +3,14 @@ import { StatsHeader } from './components/StatsHeader';
 import { KnowledgeGraph } from './components/KnowledgeGraph';
 import { RecallSimulator } from './components/RecallSimulator';
 import { EpisodicTimeline } from './components/EpisodicTimeline';
+import { IngestionPlayground } from './components/IngestionPlayground';
+import { ConflictResolver } from './components/ConflictResolver';
 import { MemoryEditorModal } from './components/MemoryEditorModal';
-import { Network, Terminal, Clock, RefreshCw } from 'lucide-react';
+import { Network, Terminal, Clock, RefreshCw, FileInput, ShieldAlert } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'GRAPH' | 'SIMULATOR' | 'TIMELINE'>('GRAPH');
+  const [activeTab, setActiveTab] = useState<'GRAPH' | 'SIMULATOR' | 'TIMELINE' | 'INGESTION' | 'CONFLICTS'>('GRAPH');
+  const [currentNamespace, setCurrentNamespace] = useState<string>('default');
   const [stats, setStats] = useState<any | null>(null);
   const [graphData, setGraphData] = useState<{ nodes: any[]; edges: any[] }>({ nodes: [], edges: [] });
   const [episodes, setEpisodes] = useState<any[]>([]);
@@ -17,10 +20,11 @@ export const App: React.FC = () => {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
+      const nsParam = encodeURIComponent(currentNamespace);
       const [statsRes, graphRes, episodesRes] = await Promise.all([
-        fetch('/api/stats').then((r) => r.json()),
-        fetch('/api/graph').then((r) => r.json()),
-        fetch('/api/episodes').then((r) => r.json()),
+        fetch(`/api/stats?namespace=${nsParam}`).then((r) => r.json()),
+        fetch(`/api/graph?namespace=${nsParam}`).then((r) => r.json()),
+        fetch(`/api/episodes?namespace=${nsParam}`).then((r) => r.json()),
       ]);
       setStats(statsRes);
       setGraphData(graphRes);
@@ -30,7 +34,7 @@ export const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentNamespace]);
 
   useEffect(() => {
     fetchData();
@@ -38,9 +42,16 @@ export const App: React.FC = () => {
 
   const handleConsolidate = async () => {
     try {
-      const res = await fetch('/api/consolidate', { method: 'POST' }).then((r) => r.json());
+      const res = await fetch('/api/consolidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ namespace: currentNamespace }),
+      }).then((r) => r.json());
       await fetchData();
-      alert(`Consolidation cycle completed in ${res.durationMs}ms!\nScored ${res.entitiesScored} entities, deduplicated ${res.deduplicatedCount}.`);
+      alert(
+        `Consolidation cycle completed in ${res.durationMs}ms for namespace '${currentNamespace}'!\n` +
+        `Scored ${res.entitiesScored} entities, pruned ${res.prunedEntities}, deduplicated ${res.deduplicatedCount}.`
+      );
     } catch (err) {
       console.error('Failed to run consolidation:', err);
     }
@@ -50,7 +61,10 @@ export const App: React.FC = () => {
     const res = await fetch('/api/query', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
+      body: JSON.stringify({
+        ...params,
+        namespace: currentNamespace,
+      }),
     });
     return await res.json();
   };
@@ -60,6 +74,8 @@ export const App: React.FC = () => {
       {/* Top Header */}
       <StatsHeader
         stats={stats}
+        currentNamespace={currentNamespace}
+        onNamespaceChange={(ns) => setCurrentNamespace(ns)}
         onRefresh={fetchData}
         onOpenAddModal={() => setIsModalOpen(true)}
         onConsolidate={handleConsolidate}
@@ -68,23 +84,23 @@ export const App: React.FC = () => {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
         {/* Navigation Tabs */}
-        <div className="flex items-center justify-between border-b border-border/80 pb-4">
-          <div className="flex items-center gap-2 bg-surface p-1 rounded-xl border border-border">
+        <div className="flex items-center justify-between border-b border-border/80 pb-4 overflow-x-auto">
+          <div className="flex items-center gap-1.5 bg-surface p-1 rounded-xl border border-border">
             <button
               onClick={() => setActiveTab('GRAPH')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
+              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
                 activeTab === 'GRAPH'
                   ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
               <Network className="w-3.5 h-3.5" />
-              Interactive Graph Canvas
+              Graph Canvas
             </button>
 
             <button
               onClick={() => setActiveTab('SIMULATOR')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
+              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
                 activeTab === 'SIMULATOR'
                   ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -95,8 +111,32 @@ export const App: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('INGESTION')}
+              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                activeTab === 'INGESTION'
+                  ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <FileInput className="w-3.5 h-3.5" />
+              Ingestion Playground
+            </button>
+
+            <button
+              onClick={() => setActiveTab('CONFLICTS')}
+              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                activeTab === 'CONFLICTS'
+                  ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              Conflict Resolver
+            </button>
+
+            <button
               onClick={() => setActiveTab('TIMELINE')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
+              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
                 activeTab === 'TIMELINE'
                   ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -108,7 +148,7 @@ export const App: React.FC = () => {
           </div>
 
           {isLoading && (
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+            <div className="flex items-center gap-2 text-xs font-mono text-slate-400 shrink-0 ml-4">
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-400" />
               Syncing...
             </div>
@@ -129,6 +169,20 @@ export const App: React.FC = () => {
             <RecallSimulator onQuery={handleQuery} />
           )}
 
+          {activeTab === 'INGESTION' && (
+            <IngestionPlayground
+              currentNamespace={currentNamespace}
+              onIngestSuccess={fetchData}
+            />
+          )}
+
+          {activeTab === 'CONFLICTS' && (
+            <ConflictResolver
+              currentNamespace={currentNamespace}
+              onResolved={fetchData}
+            />
+          )}
+
           {activeTab === 'TIMELINE' && (
             <EpisodicTimeline episodes={episodes} />
           )}
@@ -141,6 +195,7 @@ export const App: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         existingEntities={graphData.nodes.map((n) => ({ id: n.id, name: n.name, type: n.type }))}
         onCreated={fetchData}
+        currentNamespace={currentNamespace}
       />
     </div>
   );

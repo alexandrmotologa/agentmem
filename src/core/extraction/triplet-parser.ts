@@ -46,7 +46,7 @@ export class TripletParser {
   private registerDefaultRules(): void {
     // 1. Preferences: "I prefer PostgreSQL", "User prefers TypeScript over Python"
     this.rules.push({
-      pattern: /(?:i|user|we)\s+(?:strongly\s+)?(?:prefer|favors?|like|love)\s+([^.,;]+)/i,
+      pattern: /(?:i|user|we)\s+(?:strongly\s+|now\s+|also\s+|really\s+)?(?:prefer|favors?|like|love)\s+([^.,;]+)/i,
       extract: (m) => {
         const target = this.cleanEntity(m[1]);
         if (!target) return null;
@@ -179,6 +179,7 @@ export class TripletParser {
   private cleanEntity(str: string): string {
     return str
       .replace(/^(the|a|an|our|their|some)\s+/i, '')
+      .replace(/\s+(?:for|as|in)\s+(?:our|my|the|a|an)?\s*(?:database|backend|project|storage|system|app).*$/i, '')
       .replace(/[.!?,;]+$/, '')
       .trim();
   }

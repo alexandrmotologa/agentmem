@@ -22,6 +22,7 @@ export class HybridSearch {
   }
 
   public async search(options: RecallOptions): Promise<RecalledMemory[]> {
+    const ns = options.namespace || 'default';
     const topK = options.topK ?? 5;
     const wVec = options.weights?.vector ?? 0.45;
     const wBM25 = options.weights?.bm25 ?? 0.35;
@@ -29,14 +30,14 @@ export class HybridSearch {
     const graphHops = options.graphHops ?? 1;
 
     // 1. Vector Search across entities
-    const vectorMatches = await this.vectorStore.searchSimilar(options.query, 'ENTITY', topK * 3);
+    const vectorMatches = await this.vectorStore.searchSimilar(options.query, 'ENTITY', topK * 3, ns);
     const vectorScoreMap = new Map<string, number>();
     for (const match of vectorMatches) {
       vectorScoreMap.set(match.itemId, match.similarity);
     }
 
     // 2. FTS5 BM25 Search across entities
-    const ftsMatches = this.graphRepo.searchEntitiesFts(options.query, topK * 3);
+    const ftsMatches = this.graphRepo.searchEntitiesFts(options.query, topK * 3, ns);
     const ftsScoreMap = new Map<string, number>();
     for (const match of ftsMatches) {
       // Lower rank is better in SQLite FTS5 BM25 (e.g. -5.0 to 0.0), so invert/normalize
@@ -48,7 +49,7 @@ export class HybridSearch {
     const candidateIds = new Set<string>([...vectorScoreMap.keys(), ...ftsScoreMap.keys()]);
 
     // If query has exact match in entities table, add it
-    const directEntity = this.graphRepo.getEntityByName(options.query);
+    const directEntity = this.graphRepo.getEntityByName(options.query, ns);
     if (directEntity) {
       candidateIds.add(directEntity.id);
       ftsScoreMap.set(directEntity.id, 1.0);
@@ -66,6 +67,7 @@ export class HybridSearch {
     for (const entityId of candidateIds) {
       const entity = this.graphRepo.getEntityById(entityId);
       if (!entity || entity.isArchived) continue;
+      if (ns !== '*' && entity.namespace !== ns) continue;
 
       const vScore = vectorScoreMap.get(entityId) ?? 0.1;
       const bScore = ftsScoreMap.get(entityId) ?? 0.1;
@@ -97,12 +99,13 @@ export class HybridSearch {
 
     // Search episodes matching query
     const episodeFts = options.includeEpisodes !== false
-      ? this.episodicRepo.searchEpisodesFts(options.query, 3)
+      ? this.episodicRepo.searchEpisodesFts(options.query, 3, ns)
       : [];
     const relevantEpisodes = episodeFts.map((e) => ({
       sessionId: e.episode.sessionId,
       summary: e.episode.summary,
       timestamp: e.episode.createdAt,
+      agentId: e.episode.agentId,
     }));
 
     for (const item of selected) {

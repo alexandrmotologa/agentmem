@@ -90,6 +90,7 @@ export class PromptBuilder {
 
     return {
       systemPromptSnippet: snippet,
+      injectedPrompt: snippet,
       tokenCount: estimatedTokens,
       recalledEntityIds: Array.from(entityIds),
       recalledEpisodeIds: Array.from(seenEpisodes),

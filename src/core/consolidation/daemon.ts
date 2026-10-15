@@ -29,24 +29,30 @@ export class ConsolidationDaemon {
    * 3. Entity deduplication & alias resolution
    * 4. Temporal relationship cleanup
    */
-  public async consolidate(): Promise<ConsolidationStats> {
+  public async consolidate(namespace?: string): Promise<ConsolidationStats> {
     const startTime = Date.now();
 
     // 1. Decay scoring
-    const decayResult = this.decayEngine.runDecayCycle(startTime);
+    const decayResult = this.decayEngine.runDecayCycle(startTime, namespace);
 
     // 2. Prune low-importance ephemeral memories
-    const prunedEntities = this.decayEngine.pruneStaleMemories();
+    const prunedEntities = this.decayEngine.pruneStaleMemories(namespace);
 
     // 3. Deduplicate entity aliases
-    const deduplicatedCount = this.deduplicator.deduplicate();
+    const deduplicatedCount = this.deduplicator.deduplicate(namespace);
 
     // 4. Archive expired relations
-    const expiredRelations = this.db.prepare(`
+    let expireSql = `
       UPDATE relations
       SET valid_until = ?
       WHERE valid_until IS NOT NULL AND valid_until < ? AND superseded_by IS NULL
-    `).run(startTime, startTime);
+    `;
+    const params: unknown[] = [startTime, startTime];
+    if (namespace && namespace !== '*') {
+      expireSql += ' AND namespace = ?';
+      params.push(namespace);
+    }
+    const expiredRelations = (this.db.prepare(expireSql).run as any)(...params);
 
     const durationMs = Date.now() - startTime;
 
@@ -57,6 +63,7 @@ export class ConsolidationDaemon {
       deduplicatedCount,
       episodesConsolidated: 0,
       durationMs,
+      namespace: namespace || 'default',
     };
   }
 

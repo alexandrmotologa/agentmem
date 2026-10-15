@@ -30,7 +30,8 @@ export class ContradictionResolver {
     sourceEntityId: string,
     targetEntityId: string,
     relationType: string,
-    newRelationId: string
+    newRelationId: string,
+    namespace?: string
   ): ContradictionResolution {
     const normRelationType = relationType.toUpperCase();
 
@@ -44,6 +45,7 @@ export class ContradictionResolver {
       sourceId: sourceEntityId,
       relationType: normRelationType,
       activeOnly: true,
+      namespace,
     });
 
     for (const existing of activeRelations) {
@@ -57,6 +59,7 @@ export class ContradictionResolver {
           targetEntityId: existing.targetEntityId,
           relationType: 'SUPERSEDES',
           confidence: 0.95,
+          namespace: namespace || 'default',
         });
 
         return {

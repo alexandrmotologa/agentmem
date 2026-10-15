@@ -3,8 +3,12 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import pc from 'picocolors';
 
-export async function ingestCommand(filePath: string, options: { db?: string; session?: string }): Promise<void> {
+export async function ingestCommand(
+  filePath: string,
+  options: { db?: string; session?: string; namespace?: string }
+): Promise<void> {
   const dbPath = options.db || './agentmem.db';
+  const namespace = options.namespace || 'default';
   const fullPath = path.resolve(process.cwd(), filePath);
 
   if (!fs.existsSync(fullPath)) {
@@ -21,25 +25,26 @@ export async function ingestCommand(filePath: string, options: { db?: string; se
     process.exit(1);
   }
 
-  const memory = new AgentMemory({ dbPath });
+  const memory = new AgentMemory({ dbPath, defaultNamespace: namespace });
   await memory.initialize();
 
   const sessionId = options.session || parsed.sessionId || `session_${Date.now()}`;
   const turns = Array.isArray(parsed) ? parsed : (parsed.turns || []);
 
-  console.log(pc.cyan(`\n📥 Ingesting ${turns.length} conversation turns into session ${pc.bold(sessionId)}...`));
+  console.log(pc.cyan(`\n📥 Ingesting ${turns.length} conversation turns into session ${pc.bold(sessionId)} [namespace: ${namespace}]...`));
 
   const episode = await memory.ingestEpisode({
     sessionId,
     turns,
     outcome: parsed.outcome,
     summary: parsed.summary,
+    namespace,
   });
 
   console.log(pc.green('✓ Session ingested into episodic memory!'));
   console.log(pc.gray(`Summary: ${episode.summary}`));
 
-  const graphData = memory.getGraphData();
+  const graphData = memory.getGraphData(namespace);
   console.log(pc.gray(`Current Graph: ${graphData.nodes.length} entities, ${graphData.edges.length} relations.\n`));
 
   memory.close();

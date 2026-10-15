@@ -25,7 +25,8 @@ export class VectorStore {
   public async storeEmbedding(
     itemType: 'ENTITY' | 'EPISODE',
     itemId: string,
-    text: string
+    text: string,
+    namespace: string = 'default'
   ): Promise<VectorItem> {
     const vector = await this.generateEmbedding(text);
     const float32 = new Float32Array(vector);
@@ -33,14 +34,14 @@ export class VectorStore {
     const id = `vec_${randomUUID()}`;
     const now = Date.now();
 
-    this.deleteEmbedding(itemType, itemId);
+    this.deleteEmbedding(itemType, itemId, namespace);
 
     const stmt = this.db.prepare(`
-      INSERT INTO vector_embeddings (id, item_type, item_id, dimension, vector_data, created_at)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO vector_embeddings (id, item_type, item_id, dimension, vector_data, created_at, namespace)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    stmt.run(id, itemType, itemId, vector.length, buffer, now);
+    stmt.run(id, itemType, itemId, vector.length, buffer, now, namespace);
 
     return {
       id,
@@ -49,23 +50,35 @@ export class VectorStore {
       dimension: vector.length,
       vector,
       createdAt: now,
+      namespace,
     };
   }
 
   public async searchSimilar(
     queryText: string,
     itemType?: 'ENTITY' | 'EPISODE',
-    limit: number = 10
+    limit: number = 10,
+    namespace?: string
   ): Promise<Array<{ itemId: string; itemType: string; similarity: number }>> {
     const queryVector = await this.generateEmbedding(queryText);
     const queryF32 = new Float32Array(queryVector);
 
     let sql = 'SELECT id, item_type, item_id, dimension, vector_data FROM vector_embeddings';
+    const conditions: string[] = [];
     const params: unknown[] = [];
 
     if (itemType) {
-      sql += ' WHERE item_type = ?';
+      conditions.push('item_type = ?');
       params.push(itemType);
+    }
+
+    if (namespace && namespace !== '*') {
+      conditions.push('namespace = ?');
+      params.push(namespace);
+    }
+
+    if (conditions.length > 0) {
+      sql += ` WHERE ${conditions.join(' AND ')}`;
     }
 
     const rows = (this.db.prepare(sql).all as any)(...params) as Array<{
@@ -102,12 +115,16 @@ export class VectorStore {
     return results.slice(0, limit);
   }
 
-  public deleteEmbedding(itemType: string, itemId: string): boolean {
-    const stmt = this.db.prepare(
-      'DELETE FROM vector_embeddings WHERE item_type = ? AND item_id = ?'
-    );
-    const res = stmt.run(itemType, itemId);
-    return (res.changes ?? 0) > 0;
+  public deleteEmbedding(itemType: string, itemId: string, namespace?: string): boolean {
+    let sql = 'DELETE FROM vector_embeddings WHERE item_type = ? AND item_id = ?';
+    const params: unknown[] = [itemType, itemId];
+    if (namespace && namespace !== '*') {
+      sql += ' AND namespace = ?';
+      params.push(namespace);
+    }
+    const stmt = this.db.prepare(sql);
+    const res = (stmt.run as any)(...params);
+    return Number(res.changes) > 0;
   }
 
   /**

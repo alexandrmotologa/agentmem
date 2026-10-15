@@ -1,14 +1,16 @@
 import { AgentMemory } from '../../core/agent-memory.js';
 import pc from 'picocolors';
 
-export async function consolidateCommand(options: { db?: string }): Promise<void> {
+export async function consolidateCommand(options: { db?: string; namespace?: string }): Promise<void> {
   const dbPath = options.db || './agentmem.db';
-  console.log(pc.cyan(`\n⚡ AgentMem: Starting memory consolidation cycle on ${pc.bold(dbPath)}...`));
+  const namespace = options.namespace || 'default';
 
-  const memory = new AgentMemory({ dbPath });
+  console.log(pc.cyan(`\n⚡ AgentMem: Starting memory consolidation cycle on ${pc.bold(dbPath)} (namespace: ${namespace})...`));
+
+  const memory = new AgentMemory({ dbPath, defaultNamespace: namespace });
   await memory.initialize();
 
-  const stats = await memory.consolidate();
+  const stats = await memory.consolidate(namespace);
 
   console.log(pc.green('✓ Consolidation completed successfully!\n'));
   console.log(pc.white(`  Entities Scored:       ${pc.bold(String(stats.entitiesScored))}`));

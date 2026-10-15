@@ -2,14 +2,15 @@ import { AgentMemory } from '../../core/agent-memory.js';
 import { LocalServer } from '../../server/local-server.js';
 import pc from 'picocolors';
 
-export async function studioCommand(options: { db?: string; port?: string }): Promise<void> {
+export async function studioCommand(options: { db?: string; port?: string; namespace?: string }): Promise<void> {
   const dbPath = options.db || './agentmem.db';
   const port = options.port ? parseInt(options.port, 10) : 50094;
+  const namespace = options.namespace || 'default';
 
   console.log(pc.cyan(`\n🌌 Launching AgentMem Visual Studio...`));
-  console.log(pc.gray(`Database: ${dbPath}`));
+  console.log(pc.gray(`Database: ${dbPath} | Default Namespace: ${namespace}`));
 
-  const memory = new AgentMemory({ dbPath });
+  const memory = new AgentMemory({ dbPath, defaultNamespace: namespace });
   await memory.initialize();
 
   const server = new LocalServer(memory, port);

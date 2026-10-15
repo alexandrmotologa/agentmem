@@ -17,11 +17,13 @@ export class EpisodicRepository {
     const rawTurns = input.rawTurns || [];
     const importance = input.importance !== undefined ? input.importance : 0.5;
     const outcome = input.outcome || 'SUCCESS';
+    const namespace = input.namespace || 'default';
+    const agentId = input.agentId || null;
 
     const stmt = this.db.prepare(`
       INSERT INTO episodes (
-        id, session_id, summary, raw_turns, importance, outcome, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        id, session_id, summary, raw_turns, importance, outcome, created_at, namespace, agent_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -31,7 +33,9 @@ export class EpisodicRepository {
       JSON.stringify(rawTurns),
       importance,
       outcome,
-      now
+      now,
+      namespace,
+      agentId
     );
 
     this.insertFts(id, input.sessionId, input.summary);
@@ -44,6 +48,8 @@ export class EpisodicRepository {
       importance,
       outcome,
       createdAt: now,
+      namespace,
+      agentId,
     };
   }
 
@@ -56,6 +62,8 @@ export class EpisodicRepository {
 
   public listEpisodes(options?: {
     sessionId?: string;
+    namespace?: string;
+    agentId?: string;
     limit?: number;
     offset?: number;
   }): Episode[] {
@@ -67,6 +75,16 @@ export class EpisodicRepository {
     if (options?.sessionId) {
       conditions.push('session_id = ?');
       params.push(options.sessionId);
+    }
+
+    if (options?.namespace && options.namespace !== '*') {
+      conditions.push('namespace = ?');
+      params.push(options.namespace);
+    }
+
+    if (options?.agentId) {
+      conditions.push('agent_id = ?');
+      params.push(options.agentId);
     }
 
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -86,12 +104,13 @@ export class EpisodicRepository {
     const stmt = this.db.prepare('DELETE FROM episodes WHERE id = ?');
     const result = stmt.run(id);
     this.deleteFts(id);
-    return (result.changes ?? 0) > 0;
+    return Number(result.changes) > 0;
   }
 
   public searchEpisodesFts(
     query: string,
-    limit: number = 10
+    limit: number = 10,
+    namespace?: string
   ): Array<{ episode: Episode; rank: number }> {
     const cleanQuery = query.replace(/[^\w\s]/g, ' ').trim();
     if (!cleanQuery) return [];
@@ -105,29 +124,40 @@ export class EpisodicRepository {
     if (!ftsQuery) return [];
 
     try {
-      const sql = `
+      let sql = `
         SELECT f.episode_id, bm25(fts_episodes) as rank, e.*
         FROM fts_episodes f
         JOIN episodes e ON f.episode_id = e.id
         WHERE fts_episodes MATCH ?
-        ORDER BY rank ASC
-        LIMIT ?
       `;
+      const params: unknown[] = [ftsQuery];
+      if (namespace && namespace !== '*') {
+        sql += ' AND e.namespace = ?';
+        params.push(namespace);
+      }
+      sql += ' ORDER BY rank ASC LIMIT ?';
+      params.push(limit);
 
-      const rows = this.db.prepare(sql).all(ftsQuery, limit) as Record<string, unknown>[];
+      const rows = (this.db.prepare(sql).all as any)(...params) as Record<string, unknown>[];
       return rows.map((r) => ({
         episode: this.mapEpisodeRow(r),
         rank: Math.abs(Number(r.rank) || 0),
       }));
     } catch {
-      const fallbackSql = `
+      let fallbackSql = `
         SELECT * FROM episodes
         WHERE LOWER(summary) LIKE LOWER(?)
-        ORDER BY created_at DESC
-        LIMIT ?
       `;
       const searchPattern = `%${cleanQuery}%`;
-      const rows = this.db.prepare(fallbackSql).all(searchPattern, limit) as Record<string, unknown>[];
+      const params: unknown[] = [searchPattern];
+      if (namespace && namespace !== '*') {
+        fallbackSql += ' AND namespace = ?';
+        params.push(namespace);
+      }
+      fallbackSql += ' ORDER BY created_at DESC LIMIT ?';
+      params.push(limit);
+
+      const rows = (this.db.prepare(fallbackSql).all as any)(...params) as Record<string, unknown>[];
       return rows.map((r) => ({
         episode: this.mapEpisodeRow(r),
         rank: 1.0,
@@ -174,6 +204,8 @@ export class EpisodicRepository {
       importance: Number(r.importance) || 0.5,
       outcome: String(r.outcome),
       createdAt: Number(r.created_at) || Date.now(),
+      namespace: String(r.namespace || 'default'),
+      agentId: r.agent_id ? String(r.agent_id) : null,
     };
   }
 }

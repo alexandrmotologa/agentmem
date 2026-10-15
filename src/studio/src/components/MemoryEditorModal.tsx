@@ -6,6 +6,7 @@ interface MemoryEditorModalProps {
   onClose: () => void;
   existingEntities: Array<{ id: string; name: string; type: string }>;
   onCreated: () => void;
+  currentNamespace?: string;
 }
 
 export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
@@ -13,6 +14,7 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
   onClose,
   existingEntities,
   onCreated,
+  currentNamespace = 'default',
 }) => {
   const [activeTab, setActiveTab] = useState<'ENTITY' | 'RELATION'>('ENTITY');
 
@@ -57,6 +59,7 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
           entityType,
           importanceScore: importance,
           properties: props,
+          namespace: currentNamespace,
         }),
       });
 
@@ -95,6 +98,7 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
           targetEntityId: targetId,
           relationType,
           confidence,
+          namespace: currentNamespace,
         }),
       });
 

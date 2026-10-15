@@ -11,17 +11,22 @@ export class WorkingMemoryManager {
     this.maxTokens = maxTokens;
   }
 
-  public addTurn(sessionId: string, turn: ConversationTurn): WorkingMemoryItem {
+  public addTurn(
+    sessionId: string,
+    turn: ConversationTurn,
+    namespace: string = 'default'
+  ): WorkingMemoryItem {
     const tokens = this.estimateTokens(turn.content);
     const now = turn.timestamp || Date.now();
     const id = `wm_${randomUUID()}`;
+    const agentId = turn.agentId || null;
 
     const stmt = this.db.prepare(`
-      INSERT INTO working_memory (id, session_id, role, content, tokens, timestamp)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO working_memory (id, session_id, role, content, tokens, timestamp, namespace, agent_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    stmt.run(id, sessionId, turn.role, turn.content, tokens, now);
+    stmt.run(id, sessionId, turn.role, turn.content, tokens, now, namespace, agentId);
 
     this.enforceTokenBudget(sessionId);
 
@@ -32,17 +37,24 @@ export class WorkingMemoryManager {
       content: turn.content,
       tokens,
       timestamp: now,
+      namespace,
+      agentId,
     };
   }
 
-  public getSessionTurns(sessionId: string): WorkingMemoryItem[] {
-    const stmt = this.db.prepare(`
+  public getSessionTurns(sessionId: string, namespace?: string): WorkingMemoryItem[] {
+    let sql = `
       SELECT * FROM working_memory
       WHERE session_id = ?
-      ORDER BY timestamp ASC
-    `);
+    `;
+    const params: unknown[] = [sessionId];
+    if (namespace && namespace !== '*') {
+      sql += ' AND namespace = ?';
+      params.push(namespace);
+    }
+    sql += ' ORDER BY timestamp ASC';
 
-    const rows = stmt.all(sessionId) as Record<string, unknown>[];
+    const rows = (this.db.prepare(sql).all as any)(...params) as Record<string, unknown>[];
     return rows.map((r) => ({
       id: String(r.id),
       sessionId: String(r.session_id),
@@ -50,6 +62,8 @@ export class WorkingMemoryManager {
       content: String(r.content),
       tokens: Number(r.tokens) || 0,
       timestamp: Number(r.timestamp) || 0,
+      namespace: String(r.namespace || 'default'),
+      agentId: r.agent_id ? String(r.agent_id) : null,
     }));
   }
 
@@ -63,9 +77,14 @@ export class WorkingMemoryManager {
     return Number(row?.total) || 0;
   }
 
-  public clearSession(sessionId: string): void {
-    const stmt = this.db.prepare('DELETE FROM working_memory WHERE session_id = ?');
-    stmt.run(sessionId);
+  public clearSession(sessionId: string, namespace?: string): void {
+    if (namespace && namespace !== '*') {
+      const stmt = this.db.prepare('DELETE FROM working_memory WHERE session_id = ? AND namespace = ?');
+      stmt.run(sessionId, namespace);
+    } else {
+      const stmt = this.db.prepare('DELETE FROM working_memory WHERE session_id = ?');
+      stmt.run(sessionId);
+    }
   }
 
   public enforceTokenBudget(sessionId: string): number {

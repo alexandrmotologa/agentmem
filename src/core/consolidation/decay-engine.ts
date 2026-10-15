@@ -48,13 +48,21 @@ export class DecayEngine {
    * Runs decay calculations across all active entities and updates decay_retention in the DB.
    * Returns count of updated entities and count of entities marked below prune threshold.
    */
-  public runDecayCycle(now: number = Date.now()): {
+  public runDecayCycle(
+    now: number = Date.now(),
+    namespace?: string
+  ): {
     scoredCount: number;
     pruneCandidateCount: number;
   } {
-    const entities = this.db
-      .prepare('SELECT id, last_recalled_at, access_count, importance_score FROM entities WHERE is_archived = 0')
-      .all() as Array<{
+    let sql = 'SELECT id, last_recalled_at, access_count, importance_score FROM entities WHERE is_archived = 0';
+    const params: unknown[] = [];
+    if (namespace && namespace !== '*') {
+      sql += ' AND namespace = ?';
+      params.push(namespace);
+    }
+
+    const entities = (this.db.prepare(sql).all as any)(...params) as Array<{
       id: string;
       last_recalled_at: number;
       access_count: number;
@@ -90,16 +98,22 @@ export class DecayEngine {
   /**
    * Prunes low-retention, low-importance ephemeral memories by setting is_archived = 1.
    */
-  public pruneStaleMemories(): number {
-    const pruneStmt = this.db.prepare(`
+  public pruneStaleMemories(namespace?: string): number {
+    let sql = `
       UPDATE entities
       SET is_archived = 1
       WHERE decay_retention < ?
         AND importance_score < 0.6
         AND is_archived = 0
-    `);
+    `;
+    const params: unknown[] = [this.pruneThreshold];
+    if (namespace && namespace !== '*') {
+      sql += ' AND namespace = ?';
+      params.push(namespace);
+    }
 
-    const result = pruneStmt.run(this.pruneThreshold);
+    const pruneStmt = this.db.prepare(sql);
+    const result = (pruneStmt.run as any)(...params);
     return Number(result.changes) || 0;
   }
 }

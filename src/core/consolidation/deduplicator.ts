@@ -17,8 +17,12 @@ export class EntityDeduplicator {
   /**
    * Scans active entities and merges aliases into canonical entities.
    */
-  public deduplicate(): number {
-    const activeEntities = this.graphRepo.listEntities({ limit: 1000, includeArchived: false });
+  public deduplicate(namespace?: string): number {
+    const activeEntities = this.graphRepo.listEntities({
+      limit: 1000,
+      includeArchived: false,
+      namespace,
+    });
     const nameMap = new Map<string, EntityNode>();
     let mergedCount = 0;
 

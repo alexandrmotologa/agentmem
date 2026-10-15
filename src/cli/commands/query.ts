@@ -3,17 +3,18 @@ import pc from 'picocolors';
 
 export async function queryCommand(
   text: string,
-  options: { db?: string; topK?: string; maxTokens?: string; hops?: string }
+  options: { db?: string; topK?: string; maxTokens?: string; hops?: string; namespace?: string }
 ): Promise<void> {
   const dbPath = options.db || './agentmem.db';
   const topK = options.topK ? parseInt(options.topK, 10) : 5;
   const maxTokens = options.maxTokens ? parseInt(options.maxTokens, 10) : 500;
   const graphHops = options.hops ? parseInt(options.hops, 10) : 1;
+  const namespace = options.namespace || 'default';
 
   console.log(pc.cyan(`\n🔍 AgentMem Query: "${pc.bold(text)}"`));
-  console.log(pc.gray(`Database: ${dbPath} | Top-K: ${topK} | Hops: ${graphHops}\n`));
+  console.log(pc.gray(`Database: ${dbPath} | Namespace: ${namespace} | Top-K: ${topK} | Hops: ${graphHops}\n`));
 
-  const memory = new AgentMemory({ dbPath });
+  const memory = new AgentMemory({ dbPath, defaultNamespace: namespace });
   await memory.initialize();
 
   const recallResult = await memory.recall({
@@ -22,6 +23,7 @@ export async function queryCommand(
     maxTokens,
     graphHops,
     includeEpisodes: true,
+    namespace,
   });
 
   if (recallResult.details.length === 0) {
@@ -36,7 +38,7 @@ export async function queryCommand(
     const typeColor =
       item.entity.entityType === 'CONSTRAINT'
         ? pc.red
-        : item.entity.entityType === 'TECHNOLOGY'
+        : item.entity.entityType === 'TECH'
         ? pc.cyan
         : item.entity.entityType === 'PREFERENCE'
         ? pc.magenta

@@ -17,7 +17,7 @@ export type SqlParam = string | number | bigint | null | Uint8Array;
 
 export class DatabaseManager {
   private db: DatabaseSyncType;
-  private readonly dbPath: string;
+  public readonly dbPath: string;
 
   constructor(dbPath: string = ':memory:') {
     this.dbPath = dbPath;
@@ -54,13 +54,15 @@ export class DatabaseManager {
         updated_at INTEGER NOT NULL,
         last_recalled_at INTEGER NOT NULL,
         decay_retention REAL NOT NULL DEFAULT 1.0,
-        is_archived INTEGER NOT NULL DEFAULT 0
+        is_archived INTEGER NOT NULL DEFAULT 0,
+        namespace TEXT NOT NULL DEFAULT 'default'
       );
 
       CREATE INDEX IF NOT EXISTS idx_entities_name ON entities(name);
       CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(entity_type);
       CREATE INDEX IF NOT EXISTS idx_entities_importance ON entities(importance_score);
       CREATE INDEX IF NOT EXISTS idx_entities_retention ON entities(decay_retention);
+      CREATE INDEX IF NOT EXISTS idx_entities_namespace ON entities(namespace);
 
       CREATE TABLE IF NOT EXISTS relations (
         id TEXT PRIMARY KEY,
@@ -71,13 +73,15 @@ export class DatabaseManager {
         valid_until INTEGER,
         superseded_by TEXT REFERENCES relations(id),
         created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        namespace TEXT NOT NULL DEFAULT 'default'
       );
 
       CREATE INDEX IF NOT EXISTS idx_relations_source ON relations(source_entity_id);
       CREATE INDEX IF NOT EXISTS idx_relations_target ON relations(target_entity_id);
       CREATE INDEX IF NOT EXISTS idx_relations_type ON relations(relation_type);
       CREATE INDEX IF NOT EXISTS idx_relations_valid ON relations(valid_until);
+      CREATE INDEX IF NOT EXISTS idx_relations_namespace ON relations(namespace);
 
       CREATE TABLE IF NOT EXISTS episodes (
         id TEXT PRIMARY KEY,
@@ -86,11 +90,15 @@ export class DatabaseManager {
         raw_turns TEXT NOT NULL DEFAULT '[]',
         importance REAL NOT NULL DEFAULT 0.5,
         outcome TEXT NOT NULL DEFAULT 'SUCCESS',
-        created_at INTEGER NOT NULL
+        created_at INTEGER NOT NULL,
+        namespace TEXT NOT NULL DEFAULT 'default',
+        agent_id TEXT
       );
 
       CREATE INDEX IF NOT EXISTS idx_episodes_session ON episodes(session_id);
       CREATE INDEX IF NOT EXISTS idx_episodes_created ON episodes(created_at);
+      CREATE INDEX IF NOT EXISTS idx_episodes_namespace ON episodes(namespace);
+      CREATE INDEX IF NOT EXISTS idx_episodes_agent ON episodes(agent_id);
 
       CREATE TABLE IF NOT EXISTS working_memory (
         id TEXT PRIMARY KEY,
@@ -98,10 +106,13 @@ export class DatabaseManager {
         role TEXT NOT NULL,
         content TEXT NOT NULL,
         tokens INTEGER NOT NULL DEFAULT 0,
-        timestamp INTEGER NOT NULL
+        timestamp INTEGER NOT NULL,
+        namespace TEXT NOT NULL DEFAULT 'default',
+        agent_id TEXT
       );
 
       CREATE INDEX IF NOT EXISTS idx_working_session_time ON working_memory(session_id, timestamp);
+      CREATE INDEX IF NOT EXISTS idx_working_namespace ON working_memory(namespace);
 
       CREATE TABLE IF NOT EXISTS vector_embeddings (
         id TEXT PRIMARY KEY,
@@ -109,10 +120,12 @@ export class DatabaseManager {
         item_id TEXT NOT NULL,
         dimension INTEGER NOT NULL,
         vector_data BLOB NOT NULL,
-        created_at INTEGER NOT NULL
+        created_at INTEGER NOT NULL,
+        namespace TEXT NOT NULL DEFAULT 'default'
       );
 
       CREATE INDEX IF NOT EXISTS idx_vectors_item ON vector_embeddings(item_type, item_id);
+      CREATE INDEX IF NOT EXISTS idx_vectors_namespace ON vector_embeddings(namespace);
 
       CREATE VIRTUAL TABLE IF NOT EXISTS fts_entities USING fts5(
         entity_id UNINDEXED,
@@ -129,6 +142,27 @@ export class DatabaseManager {
     `;
 
     this.db.exec(schemaSql);
+    this.runMigrations();
+  }
+
+  private runMigrations(): void {
+    const migrations = [
+      "ALTER TABLE entities ADD COLUMN namespace TEXT NOT NULL DEFAULT 'default';",
+      "ALTER TABLE relations ADD COLUMN namespace TEXT NOT NULL DEFAULT 'default';",
+      "ALTER TABLE episodes ADD COLUMN namespace TEXT NOT NULL DEFAULT 'default';",
+      'ALTER TABLE episodes ADD COLUMN agent_id TEXT;',
+      "ALTER TABLE working_memory ADD COLUMN namespace TEXT NOT NULL DEFAULT 'default';",
+      'ALTER TABLE working_memory ADD COLUMN agent_id TEXT;',
+      "ALTER TABLE vector_embeddings ADD COLUMN namespace TEXT NOT NULL DEFAULT 'default';",
+    ];
+
+    for (const sql of migrations) {
+      try {
+        this.db.exec(sql);
+      } catch {
+        // Column already exists, safe to ignore
+      }
+    }
   }
 
   public prepare(sql: string): StatementSyncType {

@@ -3,16 +3,24 @@ import { EntityNode, EntityType, RelationEdge } from '../types.js';
 import { randomUUID } from 'node:crypto';
 
 export class GraphRepository {
-  private db: DatabaseManager;
+  public readonly db: DatabaseManager;
 
   constructor(db: DatabaseManager) {
     this.db = db;
   }
 
+  public restoreRelation(id: string): void {
+    const stmt = this.db.prepare(
+      'UPDATE relations SET superseded_by = NULL, valid_until = NULL, updated_at = ? WHERE id = ?'
+    );
+    stmt.run(Date.now(), id);
+  }
+
   public upsertEntity(
-    input: Partial<EntityNode> & { name: string; entityType: EntityType }
+    input: Partial<EntityNode> & { name: string; entityType: EntityType; namespace?: string }
   ): EntityNode {
-    const existing = this.getEntityByName(input.name);
+    const namespace = input.namespace || 'default';
+    const existing = this.getEntityByName(input.name, namespace);
     const now = Date.now();
 
     if (existing) {
@@ -33,7 +41,8 @@ export class GraphRepository {
             importance_score = ?,
             updated_at = ?,
             decay_retention = 1.0,
-            is_archived = 0
+            is_archived = 0,
+            namespace = ?
         WHERE id = ?
       `);
 
@@ -42,6 +51,7 @@ export class GraphRepository {
         JSON.stringify(mergedProperties),
         updatedImportance,
         now,
+        namespace,
         existing.id
       );
 
@@ -55,6 +65,7 @@ export class GraphRepository {
         updatedAt: now,
         decayRetention: 1.0,
         isArchived: false,
+        namespace,
       };
     }
 
@@ -65,8 +76,8 @@ export class GraphRepository {
     const stmt = this.db.prepare(`
       INSERT INTO entities (
         id, name, entity_type, properties, importance_score, access_count,
-        created_at, updated_at, last_recalled_at, decay_retention, is_archived
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        created_at, updated_at, last_recalled_at, decay_retention, is_archived, namespace
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -80,7 +91,8 @@ export class GraphRepository {
       now,
       now,
       1.0,
-      0
+      0,
+      namespace
     );
 
     this.insertFts(id, input.name.trim(), input.entityType, properties);
@@ -97,6 +109,7 @@ export class GraphRepository {
       lastRecalledAt: now,
       decayRetention: 1.0,
       isArchived: false,
+      namespace,
     };
   }
 
@@ -107,11 +120,16 @@ export class GraphRepository {
     return this.mapEntityRow(row);
   }
 
-  public getEntityByName(name: string): EntityNode | null {
-    const stmt = this.db.prepare(
-      'SELECT * FROM entities WHERE LOWER(name) = LOWER(?) AND is_archived = 0 LIMIT 1'
-    );
-    const row = stmt.get(name.trim()) as Record<string, unknown> | undefined;
+  public getEntityByName(name: string, namespace: string = 'default'): EntityNode | null {
+    let sql = 'SELECT * FROM entities WHERE LOWER(name) = LOWER(?) AND is_archived = 0';
+    const params: unknown[] = [name.trim()];
+    if (namespace && namespace !== '*') {
+      sql += ' AND namespace = ?';
+      params.push(namespace);
+    }
+    sql += ' LIMIT 1';
+
+    const row = (this.db.prepare(sql).get as any)(...params) as Record<string, unknown> | undefined;
     if (!row) return null;
     return this.mapEntityRow(row);
   }
@@ -122,6 +140,7 @@ export class GraphRepository {
     offset?: number;
     includeArchived?: boolean;
     search?: string;
+    namespace?: string;
   }): EntityNode[] {
     const limit = options?.limit ?? 100;
     const offset = options?.offset ?? 0;
@@ -138,6 +157,10 @@ export class GraphRepository {
     if (options?.search) {
       conditions.push('LOWER(name) LIKE LOWER(?)');
       params.push(`%${options.search}%`);
+    }
+    if (options?.namespace && options.namespace !== '*') {
+      conditions.push('namespace = ?');
+      params.push(options.namespace);
     }
 
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -165,6 +188,7 @@ export class GraphRepository {
     const lastRecalledAt = updates.lastRecalledAt ?? existing.lastRecalledAt;
     const decayRetention = updates.decayRetention ?? existing.decayRetention;
     const isArchived = updates.isArchived !== undefined ? (updates.isArchived ? 1 : 0) : (existing.isArchived ? 1 : 0);
+    const namespace = updates.namespace ?? existing.namespace;
     const now = Date.now();
 
     const stmt = this.db.prepare(`
@@ -177,6 +201,7 @@ export class GraphRepository {
           last_recalled_at = ?,
           decay_retention = ?,
           is_archived = ?,
+          namespace = ?,
           updated_at = ?
       WHERE id = ?
     `);
@@ -190,6 +215,7 @@ export class GraphRepository {
       lastRecalledAt,
       decayRetention,
       isArchived,
+      namespace,
       now,
       id
     );
@@ -215,17 +241,22 @@ export class GraphRepository {
     const stmt = this.db.prepare('DELETE FROM entities WHERE id = ?');
     const result = stmt.run(id);
     this.deleteFts(id);
-    return (result.changes ?? 0) > 0;
+    return Number(result.changes) > 0;
   }
 
   public upsertRelation(
-    relation: Omit<RelationEdge, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
+    relation: Omit<RelationEdge, 'id' | 'createdAt' | 'updatedAt' | 'namespace'> & {
+      id?: string;
+      namespace?: string;
+    }
   ): RelationEdge {
     const now = Date.now();
+    const namespace = relation.namespace || 'default';
     const existing = this.findExistingRelation(
       relation.sourceEntityId,
       relation.targetEntityId,
-      relation.relationType
+      relation.relationType,
+      namespace
     );
 
     if (existing) {
@@ -258,8 +289,8 @@ export class GraphRepository {
     const stmt = this.db.prepare(`
       INSERT INTO relations (
         id, source_entity_id, target_entity_id, relation_type,
-        confidence, valid_until, superseded_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        confidence, valid_until, superseded_by, created_at, updated_at, namespace
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -271,7 +302,8 @@ export class GraphRepository {
       relation.validUntil ?? null,
       relation.supersededBy ?? null,
       now,
-      now
+      now,
+      namespace
     );
 
     return {
@@ -284,6 +316,7 @@ export class GraphRepository {
       supersededBy: relation.supersededBy ?? null,
       createdAt: now,
       updatedAt: now,
+      namespace,
     };
   }
 
@@ -292,6 +325,7 @@ export class GraphRepository {
     targetId?: string;
     relationType?: string;
     activeOnly?: boolean;
+    namespace?: string;
   }): RelationEdge[] {
     const conditions: string[] = [];
     const params: unknown[] = [];
@@ -307,6 +341,10 @@ export class GraphRepository {
     if (options?.relationType) {
       conditions.push('r.relation_type = ?');
       params.push(options.relationType.toUpperCase());
+    }
+    if (options?.namespace && options.namespace !== '*') {
+      conditions.push('r.namespace = ?');
+      params.push(options.namespace);
     }
     if (options?.activeOnly) {
       conditions.push('(r.valid_until IS NULL OR r.valid_until > ?)');
@@ -350,7 +388,7 @@ export class GraphRepository {
   public deleteRelation(id: string): boolean {
     const stmt = this.db.prepare('DELETE FROM relations WHERE id = ?');
     const result = stmt.run(id);
-    return (result.changes ?? 0) > 0;
+    return Number(result.changes) > 0;
   }
 
   public markRelationSuperseded(oldRelationId: string, newRelationId: string): void {
@@ -365,10 +403,6 @@ export class GraphRepository {
     stmt.run(now, newRelationId, now, oldRelationId);
   }
 
-  /**
-   * Recursive Common Table Expression (CTE) neighborhood traversal.
-   * Discovers connected entities up to maxHops away.
-   */
   public getConnectedNeighborhood(
     entityId: string,
     maxHops: number = 2
@@ -429,12 +463,10 @@ export class GraphRepository {
     return { nodes: entities, edges };
   }
 
-  /**
-   * Search entities via SQLite FTS5 table
-   */
   public searchEntitiesFts(
     query: string,
-    limit: number = 10
+    limit: number = 10,
+    namespace?: string
   ): Array<{ entity: EntityNode; rank: number }> {
     const cleanQuery = query.replace(/[^\w\s]/g, ' ').trim();
     if (!cleanQuery) return [];
@@ -448,33 +480,41 @@ export class GraphRepository {
     if (!ftsQuery) return [];
 
     try {
-      const sql = `
+      let sql = `
         SELECT f.entity_id, bm25(fts_entities) as rank, e.*
         FROM fts_entities f
         JOIN entities e ON f.entity_id = e.id
         WHERE fts_entities MATCH ? AND e.is_archived = 0
-        ORDER BY rank ASC
-        LIMIT ?
       `;
+      const params: unknown[] = [ftsQuery];
+      if (namespace && namespace !== '*') {
+        sql += ' AND e.namespace = ?';
+        params.push(namespace);
+      }
+      sql += ' ORDER BY rank ASC LIMIT ?';
+      params.push(limit);
 
-      const rows = this.db.prepare(sql).all(ftsQuery, limit) as Record<string, unknown>[];
+      const rows = (this.db.prepare(sql).all as any)(...params) as Record<string, unknown>[];
       return rows.map((r) => ({
         entity: this.mapEntityRow(r),
         rank: Math.abs(Number(r.rank) || 0),
       }));
     } catch {
-      // Fallback to LIKE if FTS expression has syntax quirk
-      const fallbackSql = `
+      let fallbackSql = `
         SELECT * FROM entities
         WHERE (LOWER(name) LIKE LOWER(?) OR LOWER(properties) LIKE LOWER(?))
           AND is_archived = 0
-        ORDER BY importance_score DESC
-        LIMIT ?
       `;
       const searchPattern = `%${cleanQuery}%`;
-      const rows = this.db
-        .prepare(fallbackSql)
-        .all(searchPattern, searchPattern, limit) as Record<string, unknown>[];
+      const params: unknown[] = [searchPattern, searchPattern];
+      if (namespace && namespace !== '*') {
+        fallbackSql += ' AND namespace = ?';
+        params.push(namespace);
+      }
+      fallbackSql += ' ORDER BY importance_score DESC LIMIT ?';
+      params.push(limit);
+
+      const rows = (this.db.prepare(fallbackSql).all as any)(...params) as Record<string, unknown>[];
       return rows.map((r) => ({
         entity: this.mapEntityRow(r),
         rank: 1.0,
@@ -485,14 +525,21 @@ export class GraphRepository {
   private findExistingRelation(
     sourceId: string,
     targetId: string,
-    type: string
+    type: string,
+    namespace: string = 'default'
   ): RelationEdge | null {
-    const stmt = this.db.prepare(`
+    let sql = `
       SELECT * FROM relations
       WHERE source_entity_id = ? AND target_entity_id = ? AND relation_type = ?
-      LIMIT 1
-    `);
-    const row = stmt.get(sourceId, targetId, type.toUpperCase()) as Record<string, unknown> | undefined;
+    `;
+    const params: unknown[] = [sourceId, targetId, type.toUpperCase()];
+    if (namespace !== '*') {
+      sql += ' AND namespace = ?';
+      params.push(namespace);
+    }
+    sql += ' LIMIT 1';
+
+    const row = (this.db.prepare(sql).get as any)(...params) as Record<string, unknown> | undefined;
     if (!row) return null;
     return this.mapRelationRow(row);
   }
@@ -540,6 +587,7 @@ export class GraphRepository {
       lastRecalledAt: Number(r.last_recalled_at) || Date.now(),
       decayRetention: Number(r.decay_retention) || 1.0,
       isArchived: Boolean(r.is_archived),
+      namespace: String(r.namespace || 'default'),
     };
   }
 
@@ -557,6 +605,7 @@ export class GraphRepository {
       sourceEntityName: r.source_name ? String(r.source_name) : undefined,
       targetEntityName: r.target_name ? String(r.target_name) : undefined,
       targetEntityType: r.target_type ? (String(r.target_type) as EntityType) : undefined,
+      namespace: String(r.namespace || 'default'),
     };
   }
 }
