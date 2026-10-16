@@ -117,12 +117,12 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-surface border border-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-surface border border-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="p-5 border-b border-border flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-white">Manual Memory Editor</h3>
+            <h3 className="text-base font-bold text-white whitespace-nowrap">Manual Memory Editor</h3>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X className="w-4 h-4" />
@@ -130,41 +130,41 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex border-b border-border bg-[#0b1120]">
+        <div className="flex border-b border-border bg-[#0b1120] shrink-0">
           <button
             onClick={() => setActiveTab('ENTITY')}
-            className={`flex-1 py-3 text-xs font-mono font-medium flex items-center justify-center gap-2 border-b-2 transition-all ${
+            className={`flex-1 py-2.5 sm:py-3 text-xs font-mono font-medium flex items-center justify-center gap-2 border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'ENTITY'
                 ? 'border-sky-500 text-sky-400 bg-sky-500/5'
                 : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
             <Database className="w-3.5 h-3.5" />
-            Add Entity Node
+            <span>Add Entity Node</span>
           </button>
           <button
             onClick={() => setActiveTab('RELATION')}
-            className={`flex-1 py-3 text-xs font-mono font-medium flex items-center justify-center gap-2 border-b-2 transition-all ${
+            className={`flex-1 py-2.5 sm:py-3 text-xs font-mono font-medium flex items-center justify-center gap-2 border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'RELATION'
                 ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
                 : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
             <GitFork className="w-3.5 h-3.5" />
-            Link Relation Edge
+            <span>Link Relation Edge</span>
           </button>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="m-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
+          <div className="m-3 sm:m-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs shrink-0">
             {error}
           </div>
         )}
 
         {/* Entity Form */}
         {activeTab === 'ENTITY' ? (
-          <form onSubmit={handleCreateEntity} className="p-5 space-y-4 text-xs">
+          <form onSubmit={handleCreateEntity} className="overflow-y-auto p-4 sm:p-5 space-y-4 text-xs">
             <div>
               <label className="text-slate-400 font-mono block mb-1.5">Entity Name *</label>
               <input
@@ -177,7 +177,7 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-slate-400 font-mono block mb-1.5">Entity Type</label>
                 <select
@@ -224,14 +224,14 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-mono"
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-mono whitespace-nowrap shrink-0"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold font-mono disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold font-mono disabled:opacity-50 whitespace-nowrap shrink-0"
               >
                 {isSubmitting ? 'Creating...' : 'Create Entity'}
               </button>
@@ -239,7 +239,7 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
           </form>
         ) : (
           /* Relation Form */
-          <form onSubmit={handleCreateRelation} className="p-5 space-y-4 text-xs">
+          <form onSubmit={handleCreateRelation} className="overflow-y-auto p-4 sm:p-5 space-y-4 text-xs">
             <div>
               <label className="text-slate-400 font-mono block mb-1.5">Source Entity *</label>
               <select
@@ -257,7 +257,7 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-slate-400 font-mono block mb-1.5">Relation Type</label>
                 <select
@@ -312,14 +312,14 @@ export const MemoryEditorModal: React.FC<MemoryEditorModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-mono"
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-mono whitespace-nowrap shrink-0"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold font-mono disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold font-mono disabled:opacity-50 whitespace-nowrap shrink-0"
               >
                 {isSubmitting ? 'Linking...' : 'Link Relation'}
               </button>

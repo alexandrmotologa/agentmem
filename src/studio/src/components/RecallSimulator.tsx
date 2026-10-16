@@ -70,7 +70,7 @@ export const RecallSimulator: React.FC<RecallSimulatorProps> = ({ onQuery }) => 
 
       {/* Query Bar & Presets */}
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -85,16 +85,16 @@ export const RecallSimulator: React.FC<RecallSimulatorProps> = ({ onQuery }) => 
           <button
             onClick={() => handleRunQuery()}
             disabled={isLoading}
-            className="px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs rounded-xl flex items-center gap-2 transition-all shadow-md shadow-sky-500/20 disabled:opacity-50"
+            className="px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-sky-500/20 disabled:opacity-50 whitespace-nowrap shrink-0"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            {isLoading ? 'Recalling...' : 'Simulate Recall'}
+            <span>{isLoading ? 'Recalling...' : 'Simulate Recall'}</span>
           </button>
         </div>
 
         {/* Preset Pills */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-mono text-slate-500">Presets:</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <span className="text-[11px] font-mono text-slate-500 shrink-0">Presets:</span>
           {presets.map((preset, idx) => (
             <button
               key={idx}
@@ -102,7 +102,7 @@ export const RecallSimulator: React.FC<RecallSimulatorProps> = ({ onQuery }) => 
                 setQuery(preset);
                 handleRunQuery(preset);
               }}
-              className="px-2.5 py-1 text-xs rounded-lg bg-surface border border-border/80 text-slate-400 hover:text-white hover:border-slate-600 transition-all font-mono"
+              className="px-2.5 py-1 text-xs rounded-lg bg-surface border border-border/80 text-slate-400 hover:text-white hover:border-slate-600 transition-all font-mono whitespace-nowrap"
             >
               {preset}
             </button>
@@ -235,17 +235,17 @@ export const RecallSimulator: React.FC<RecallSimulatorProps> = ({ onQuery }) => 
                   )}
 
                   {/* Micro metric pills */}
-                  <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-border/50 text-[10px] font-mono text-slate-400">
-                    <div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-2 border-t border-border/50 text-[10px] font-mono text-slate-400">
+                    <div className="whitespace-nowrap">
                       Vec: <span className="text-sky-300 font-semibold">{mem.scores?.vectorScore?.toFixed(2)}</span>
                     </div>
-                    <div>
+                    <div className="whitespace-nowrap">
                       BM25: <span className="text-indigo-300 font-semibold">{mem.scores?.bm25Score?.toFixed(2)}</span>
                     </div>
-                    <div>
+                    <div className="whitespace-nowrap">
                       Graph: <span className="text-purple-300 font-semibold">{mem.scores?.graphScore?.toFixed(2)}</span>
                     </div>
-                    <div>
+                    <div className="whitespace-nowrap">
                       Ret: <span className="text-emerald-300 font-semibold">{Math.round((mem.entity?.decayRetention || 1) * 100)}%</span>
                     </div>
                   </div>

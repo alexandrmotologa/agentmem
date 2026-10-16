@@ -99,50 +99,50 @@ The project requires Node 22 and uses React 19 for visualization.`
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-220px)]">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-[550px] lg:h-[calc(100vh-220px)]">
       {/* Editor Column */}
-      <div className="flex-1 flex flex-col bg-surface border border-border rounded-xl p-5 shadow-lg shadow-black/20">
-        <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
-          <div className="flex items-center gap-2">
+      <div className="flex-1 flex flex-col bg-surface border border-border rounded-xl p-4 sm:p-5 shadow-lg shadow-black/20">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-border mb-4">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setMode('DOCUMENT')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                 mode === 'DOCUMENT'
                   ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
-              Markdown Spec / Doc
+              <span>Markdown Spec / Doc</span>
             </button>
             <button
               onClick={() => setMode('CONVERSATION')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                 mode === 'CONVERSATION'
                   ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               <Code2 className="w-3.5 h-3.5" />
-              Dialogue Trace / JSON
+              <span>Dialogue Trace / JSON</span>
             </button>
           </div>
 
           {mode === 'DOCUMENT' && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-slate-400">Project:</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs font-mono text-slate-400 whitespace-nowrap">Project:</span>
               <input
                 type="text"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                className="bg-slate-900 border border-border px-2.5 py-1 rounded text-xs text-white font-mono focus:outline-none focus:border-sky-500 w-32"
+                className="bg-slate-900 border border-border px-2.5 py-1 rounded text-xs text-white font-mono focus:outline-none focus:border-sky-500 w-28 sm:w-32"
                 placeholder="Project Name"
               />
             </div>
           )}
         </div>
 
-        <div className="flex-1 flex flex-col mb-4">
+        <div className="flex-1 flex flex-col mb-4 min-h-[220px]">
           <label className="text-xs font-mono text-slate-400 mb-2">
             {mode === 'DOCUMENT'
               ? 'Paste Markdown document, PRD, or technical specification:'
@@ -151,30 +151,30 @@ The project requires Node 22 and uses React 19 for visualization.`
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="flex-1 w-full bg-[#0a0f1d] border border-border/80 rounded-lg p-3 text-xs font-mono text-slate-200 resize-none focus:outline-none focus:border-sky-500 leading-relaxed"
+            className="flex-1 w-full min-h-[200px] bg-[#0a0f1d] border border-border/80 rounded-lg p-3 text-xs font-mono text-slate-200 resize-none focus:outline-none focus:border-sky-500 leading-relaxed"
             placeholder="Type or paste content here..."
           />
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-border">
-          <div className="text-xs font-mono text-slate-400">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-border">
+          <div className="text-xs font-mono text-slate-400 whitespace-nowrap">
             Target Namespace: <span className="text-sky-400 font-semibold">{currentNamespace}</span>
           </div>
 
           <button
             onClick={handleIngest}
             disabled={isLoading || !content.trim()}
-            className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all disabled:opacity-50 shadow-md shadow-sky-500/20"
+            className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50 shadow-md shadow-sky-500/20 whitespace-nowrap shrink-0"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            {isLoading ? 'Extracting Facts...' : 'Ingest & Extract Facts'}
+            <span>{isLoading ? 'Extracting Facts...' : 'Ingest & Extract Facts'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* Output / Results Column */}
-      <div className="w-full lg:w-96 flex flex-col bg-surface border border-border rounded-xl p-5 shadow-lg shadow-black/20">
+      <div className="w-full lg:w-96 flex flex-col bg-surface border border-border rounded-xl p-4 sm:p-5 shadow-lg shadow-black/20 shrink-0">
         <h3 className="text-xs font-bold font-mono uppercase tracking-wider text-slate-400 pb-3 border-b border-border mb-4">
           Extraction Output
         </h3>

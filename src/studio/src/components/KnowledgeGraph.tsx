@@ -345,16 +345,16 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({ nodes, edges }) 
   }, [selectedNode, edges]);
 
   return (
-    <div className="relative w-full h-[650px] bg-[#070b14] rounded-2xl border border-border overflow-hidden flex flex-col">
+    <div className="relative w-full min-h-[500px] h-[calc(100vh-220px)] max-h-[850px] bg-[#070b14] rounded-2xl border border-border overflow-hidden flex flex-col">
       {/* Top Controls Toolbar */}
-      <div className="absolute top-4 left-4 right-4 z-10 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-10 flex flex-wrap items-center justify-between gap-2.5 pointer-events-none">
         {/* Type Filter Pills */}
-        <div className="flex items-center gap-1.5 bg-surface/90 backdrop-blur-md p-1.5 rounded-xl border border-border shadow-lg pointer-events-auto">
+        <div className="flex items-center gap-1 bg-surface/90 backdrop-blur-md p-1 sm:p-1.5 rounded-xl border border-border shadow-lg pointer-events-auto overflow-x-auto max-w-full scrollbar-none shrink-0">
           {['ALL', 'TECHNOLOGY', 'CONSTRAINT', 'PREFERENCE', 'PROJECT', 'PERSON'].map((type) => (
             <button
               key={type}
               onClick={() => setSelectedType(type)}
-              className={`px-2.5 py-1 text-xs font-mono font-medium rounded-lg transition-all ${
+              className={`px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-mono font-medium rounded-lg transition-all whitespace-nowrap shrink-0 ${
                 selectedType === type
                   ? 'bg-sky-500 text-slate-950 shadow-sm'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -366,19 +366,19 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({ nodes, edges }) 
         </div>
 
         {/* Search & Zoom Toolbar */}
-        <div className="flex items-center gap-2 pointer-events-auto">
+        <div className="flex items-center gap-2 pointer-events-auto shrink-0">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 shrink-0" />
             <input
               type="text"
               placeholder="Search entities..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 pr-3 py-1.5 text-xs bg-surface/90 backdrop-blur-md border border-border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono w-48 shadow-lg"
+              className="pl-8 pr-3 py-1.5 text-xs bg-surface/90 backdrop-blur-md border border-border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono w-32 sm:w-48 focus:w-44 sm:focus:w-56 transition-all shadow-lg"
             />
           </div>
 
-          <div className="flex items-center bg-surface/90 backdrop-blur-md border border-border rounded-xl p-1 shadow-lg">
+          <div className="flex items-center bg-surface/90 backdrop-blur-md border border-border rounded-xl p-1 shadow-lg shrink-0">
             <button
               onClick={() => (transformRef.current.scale = Math.min(3, transformRef.current.scale * 1.2))}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
@@ -416,7 +416,7 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({ nodes, edges }) 
 
       {/* Node Inspector Drawer */}
       {selectedNode && (
-        <div className="absolute right-4 top-20 bottom-4 w-80 bg-surface/95 backdrop-blur-md border border-border rounded-2xl p-5 shadow-2xl overflow-y-auto z-20 transition-all">
+        <div className="absolute right-3 sm:right-4 top-16 sm:top-20 bottom-14 sm:bottom-4 w-[calc(100%-1.5rem)] sm:w-80 max-w-sm bg-surface/95 backdrop-blur-md border border-border rounded-2xl p-4 sm:p-5 shadow-2xl overflow-y-auto z-20 transition-all">
           <div className="flex items-start justify-between">
             <div>
               <span
@@ -523,17 +523,17 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({ nodes, edges }) 
       )}
 
       {/* Legend Footer */}
-      <div className="p-3 bg-surface/80 border-t border-border flex flex-wrap items-center justify-between text-xs text-slate-400 px-6">
-        <div className="flex items-center gap-4">
-          <span className="font-mono text-slate-500">Legend:</span>
+      <div className="p-2.5 sm:p-3 bg-surface/80 border-t border-border flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-400 px-3 sm:px-6">
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+          <span className="font-mono text-slate-500 text-[11px] whitespace-nowrap">Legend:</span>
           {Object.entries(TYPE_COLORS).map(([type, c]) => (
-            <div key={type} className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.stroke }} />
+            <div key={type} className="flex items-center gap-1.5 whitespace-nowrap">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: c.stroke }} />
               <span className="font-mono text-[11px] text-slate-300">{type}</span>
             </div>
           ))}
         </div>
-        <div className="font-mono text-[11px] text-slate-500">
+        <div className="font-mono text-[11px] text-slate-500 whitespace-nowrap ml-auto sm:ml-0">
           Showing {nodes.length} nodes, {edges.length} edges
         </div>
       </div>

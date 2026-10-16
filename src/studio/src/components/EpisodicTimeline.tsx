@@ -67,20 +67,20 @@ export const EpisodicTimeline: React.FC<EpisodicTimelineProps> = ({ episodes }) 
                 key={ep.id}
                 className="bg-surface border border-border rounded-xl p-5 hover:border-slate-600 transition-all shadow-md"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
                       <CheckCircle2 className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs font-semibold text-white">
+                        <span className="font-mono text-xs font-semibold text-white whitespace-nowrap">
                           Session: {ep.sessionId}
                         </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-border">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-border whitespace-nowrap">
                           {dateStr}
                         </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                           {ep.outcome}
                         </span>
                       </div>
@@ -88,16 +88,16 @@ export const EpisodicTimeline: React.FC<EpisodicTimelineProps> = ({ episodes }) 
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-2 shrink-0">
-                    <span className="text-[11px] font-mono text-slate-400">
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
+                    <span className="text-[11px] font-mono text-slate-400 whitespace-nowrap">
                       Importance: <strong className="text-white">{(ep.importance * 100).toFixed(0)}%</strong>
                     </span>
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : ep.id)}
-                      className="px-2.5 py-1 text-xs font-mono text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center gap-1 transition-all"
+                      className="px-2.5 py-1 text-xs font-mono text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center gap-1 transition-all whitespace-nowrap shrink-0"
                     >
                       <MessageSquare className="w-3 h-3" />
-                      {ep.rawTurns.length} turns
+                      <span>{ep.rawTurns.length} turns</span>
                       {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                     </button>
                   </div>

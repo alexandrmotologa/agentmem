@@ -68,15 +68,15 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
   };
 
   return (
-    <div className="flex flex-col bg-surface border border-border rounded-xl p-6 shadow-lg shadow-black/20 min-h-[500px]">
-      <div className="flex items-center justify-between pb-4 border-b border-border mb-6">
+    <div className="flex flex-col bg-surface border border-border rounded-xl p-4 sm:p-6 shadow-lg shadow-black/20 min-h-[500px]">
+      <div className="flex flex-wrap items-start sm:items-center justify-between gap-3 pb-4 border-b border-border mb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-amber-400" />
-              Contradiction & Conflict Resolver
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2 whitespace-nowrap">
+              <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
+              <span>Contradiction & Conflict Resolver</span>
             </h2>
-            <span className="px-2 py-0.5 text-xs font-mono rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+            <span className="px-2 py-0.5 text-xs font-mono rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 whitespace-nowrap">
               {conflicts.length} Contradictions Detected
             </span>
           </div>
@@ -87,10 +87,10 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
 
         <button
           onClick={fetchConflicts}
-          className="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-mono text-slate-300 hover:text-white border border-border transition-all flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-mono text-slate-300 hover:text-white border border-border transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ml-auto sm:ml-0"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          Refresh
+          <span>Refresh</span>
         </button>
       </div>
 
@@ -99,7 +99,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
           Scanning for contradiction edges...
         </div>
       ) : conflicts.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 sm:p-12">
           <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
             <Sparkles className="w-6 h-6 text-emerald-400" />
           </div>
@@ -109,29 +109,29 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4 overflow-y-auto max-h-[600px] pr-2">
+        <div className="flex flex-col gap-4 overflow-y-auto max-h-[600px] pr-1 sm:pr-2">
           {conflicts.map((item) => (
             <div
               key={item.id}
-              className="bg-[#0b1120] border border-amber-500/30 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+              className="bg-[#0b1120] border border-amber-500/30 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4"
             >
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-sm text-white">{item.sourceEntityName}</span>
-                    <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap">
                       {item.relationType}
                     </span>
                     <span className="font-semibold text-sm text-slate-300 line-through opacity-80">
                       {item.targetEntityName}
                     </span>
-                    <span className="text-[11px] font-mono text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
+                    <span className="text-[11px] font-mono text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 whitespace-nowrap">
                       Superseded / Inactive
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 mt-2 text-[11px] font-mono text-slate-400">
+                  <div className="flex items-center gap-2 sm:gap-3 mt-2 text-[11px] font-mono text-slate-400 flex-wrap">
                     <span>Edge ID: {item.id.slice(0, 8)}...</span>
                     <span>•</span>
                     <span>Confidence: {item.confidence.toFixed(2)}</span>
@@ -142,31 +142,31 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+              <div className="flex items-center gap-2 self-start md:self-center shrink-0 flex-wrap sm:flex-nowrap">
                 <button
                   onClick={() => handleResolve(item.id, 'KEEP_OLD')}
                   disabled={actionInProgress === item.id}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-border text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all disabled:opacity-50"
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-border text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all disabled:opacity-50 whitespace-nowrap shrink-0"
                   title="Re-activate this old relation and un-supersede it"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-sky-400" />
-                  Restore Old
+                  <span>Restore Old</span>
                 </button>
 
                 <button
                   onClick={() => handleResolve(item.id, 'KEEP_NEW')}
                   disabled={actionInProgress === item.id}
-                  className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all disabled:opacity-50"
+                  className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all disabled:opacity-50 whitespace-nowrap shrink-0"
                   title="Delete old relation permanently and keep newer fact"
                 >
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  Keep New
+                  <span>Keep New</span>
                 </button>
 
                 <button
                   onClick={() => handleResolve(item.id, 'DELETE_BOTH')}
                   disabled={actionInProgress === item.id}
-                  className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg transition-all disabled:opacity-50"
+                  className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg transition-all disabled:opacity-50 shrink-0"
                   title="Delete both contradicting relations"
                 >
                   <Trash2 className="w-4 h-4" />

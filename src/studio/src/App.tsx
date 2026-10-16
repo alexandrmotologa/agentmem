@@ -84,73 +84,73 @@ export const App: React.FC = () => {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 flex flex-col gap-4 sm:gap-6">
         {/* Navigation Tabs */}
-        <div className="flex items-center justify-between border-b border-border/80 pb-3 sm:pb-4 overflow-x-auto scrollbar-none">
-          <div className="flex items-center gap-1.5 bg-surface p-1 rounded-xl border border-border shrink-0">
+        <div className="flex items-center justify-between border-b border-border/80 pb-3 sm:pb-4 overflow-x-auto scrollbar-none gap-4">
+          <div className="flex items-center gap-1 sm:gap-1.5 bg-surface p-1 rounded-xl border border-border shrink-0 overflow-x-auto scrollbar-none">
             <button
               onClick={() => setActiveTab('GRAPH')}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'GRAPH'
                   ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <Network className="w-3.5 h-3.5" />
-              Graph Canvas
+              <Network className="w-3.5 h-3.5 shrink-0" />
+              <span>Graph Canvas</span>
             </button>
 
             <button
               onClick={() => setActiveTab('SIMULATOR')}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'SIMULATOR'
                   ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <Terminal className="w-3.5 h-3.5" />
-              Recall Simulator
+              <Terminal className="w-3.5 h-3.5 shrink-0" />
+              <span>Recall Simulator</span>
             </button>
 
             <button
               onClick={() => setActiveTab('INGESTION')}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'INGESTION'
                   ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <FileInput className="w-3.5 h-3.5" />
-              Ingestion Playground
+              <FileInput className="w-3.5 h-3.5 shrink-0" />
+              <span>Ingestion Playground</span>
             </button>
 
             <button
               onClick={() => setActiveTab('CONFLICTS')}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'CONFLICTS'
                   ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              Conflict Resolver
+              <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+              <span>Conflict Resolver</span>
             </button>
 
             <button
               onClick={() => setActiveTab('TIMELINE')}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'TIMELINE'
                   ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <Clock className="w-3.5 h-3.5" />
-              Episodic Timeline
+              <Clock className="w-3.5 h-3.5 shrink-0" />
+              <span>Episodic Timeline</span>
             </button>
           </div>
 
           {isLoading && (
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400 shrink-0 ml-4">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-400" />
-              Syncing...
+            <div className="flex items-center gap-2 text-xs font-mono text-slate-400 shrink-0 ml-auto whitespace-nowrap">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-400 shrink-0" />
+              <span>Syncing...</span>
             </div>
           )}
         </div>

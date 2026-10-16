@@ -29,9 +29,21 @@ export class LocalServer {
   private setupRoutes(): void {
     this.app.use('/api', createApiRouter(this.memory));
 
-    // Resolve studio dist path
-    const studioDist = path.resolve(process.cwd(), 'src/studio/dist');
-    if (fs.existsSync(studioDist)) {
+    // Resolve studio dist path across local dev and installed package locations
+    const currentDir = typeof __dirname !== 'undefined'
+      ? __dirname
+      : path.dirname(fileURLToPath(import.meta.url));
+
+    const candidatePaths = [
+      path.resolve(process.cwd(), 'src/studio/dist'),
+      path.resolve(currentDir, '../src/studio/dist'),
+      path.resolve(currentDir, '../../src/studio/dist'),
+      path.resolve(currentDir, '../studio/dist'),
+      path.resolve(currentDir, './studio'),
+    ];
+    const studioDist = candidatePaths.find((p) => fs.existsSync(p));
+
+    if (studioDist) {
       this.app.use(express.static(studioDist));
       this.app.get('*', (_req, res) => {
         res.sendFile(path.join(studioDist, 'index.html'));
